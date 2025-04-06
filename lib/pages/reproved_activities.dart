@@ -17,9 +17,12 @@ class ReprovedActivities extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: Column(
+                spacing: 8,
                 children: List<Widget>.generate(
                   4,
-                  (index) => const ReprovedActivityContainer(),
+                  (index) => const ActivityContainer(
+                    isReproved: true,
+                  ),
                 ),
               ),
             )

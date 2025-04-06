@@ -19,6 +19,7 @@ class Activities extends StatelessWidget {
               width: double.infinity,
               padding: const EdgeInsets.all(16),
               child: Column(
+                spacing: 8,
                 children: List<Widget>.generate(
                   40,
                   (index) => const ActivityContainer(),
