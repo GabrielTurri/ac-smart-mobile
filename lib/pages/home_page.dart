@@ -1,59 +1,11 @@
 import 'package:ac_smart/pages/activities.dart';
 import 'package:ac_smart/pages/dashboard.dart';
-import 'package:ac_smart/pages/login.dart';
 import 'package:ac_smart/pages/reproved_activities.dart';
-import 'package:ac_smart/pages/ui/activity_details.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-final _router = GoRouter(routes: [
-  ShellRoute(
-      routes: [
-        GoRoute(
-          path: '/',
-          // path: '/profile/:userid?filter=xyz',
-          builder: (context, state) => const Dashboard(),
-          // ProfileScreen(
-          //  userId: state.params['userId'],
-          //  userId: state.queryParams[filter]
-          // )
-        ),
-        GoRoute(
-          path: '/activities',
-          builder: (context, state) => const Activities(),
-        ),
-        GoRoute(
-          path: '/login',
-          builder: (context, state) => const ACSMartLogin(),
-        ),
-        GoRoute(
-          path: '/activities/new',
-          builder: (context, state) => const ActivityDetails(),
-        ),
-      ],
-      builder: (context, state, child) {
-        return HomePage();
-      })
-]);
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp.router(
-      title: 'AC Smart',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-      ),
-      routerConfig: _router,
-    );
-  }
-}
-
 class HomePage extends StatefulWidget {
-  HomePage({super.key});
+  const HomePage({super.key});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -86,12 +38,12 @@ class _HomePageState extends State<HomePage> {
       ),
       body: PageView(
         controller: pageController,
-        children: [
+        onPageChanged: setPaginaAtual,
+        children: const [
           Dashboard(),
           Activities(),
           ReprovedActivities(),
         ],
-        onPageChanged: setPaginaAtual,
       ),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
