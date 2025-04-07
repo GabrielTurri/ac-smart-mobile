@@ -59,6 +59,7 @@ class ActivityContainer extends StatelessWidget {
           ),
         ],
       ),
+      subtitle: Text(atividade.status),
     );
     // return Container(
     //   width: double.infinity,
