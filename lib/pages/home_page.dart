@@ -25,15 +25,33 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    const destinationsList = [
+      NavigationDestination(
+        icon: Icon(Icons.dashboard_outlined, color: Colors.white),
+        selectedIcon: Icon(Icons.dashboard, color: Colors.white),
+        label: 'Dashboard',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.view_list_outlined, color: Colors.white),
+        selectedIcon: Icon(Icons.view_list, color: Colors.white),
+        label: 'Minhas ACs',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.cancel_schedule_send_outlined, color: Colors.white),
+        selectedIcon: Icon(Icons.cancel_schedule_send, color: Colors.white),
+        label: 'Reprovadas',
+      ),
+    ];
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context.go('/login');
+          context.push('/activities/new');
         },
         label: const Icon(
           Icons.note_add,
           color: Colors.white,
         ),
+        tooltip: 'Criar atividade',
         backgroundColor: const Color(0xff043565),
       ),
       body: PageView(
@@ -62,25 +80,7 @@ class _HomePageState extends State<HomePage> {
               curve: Curves.ease,
             );
           },
-          destinations: const [
-            NavigationDestination(
-              icon: Icon(Icons.dashboard_outlined, color: Colors.white),
-              selectedIcon: Icon(Icons.dashboard, color: Colors.white),
-              label: 'Dashboard',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.view_list_outlined, color: Colors.white),
-              selectedIcon: Icon(Icons.view_list, color: Colors.white),
-              label: 'Minhas ACs',
-            ),
-            NavigationDestination(
-              icon: Icon(Icons.cancel_schedule_send_outlined,
-                  color: Colors.white),
-              selectedIcon:
-                  Icon(Icons.cancel_schedule_send, color: Colors.white),
-              label: 'Reprovadas',
-            ),
-          ],
+          destinations: destinationsList,
           selectedIndex: currentPage,
         ),
       ),

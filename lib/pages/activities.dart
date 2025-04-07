@@ -13,19 +13,21 @@ class Activities extends StatelessWidget {
         title: 'Atividades',
       ),
       body: SingleChildScrollView(
+        // height: MediaQuery.of(context).size.width * 0.80,
+        scrollDirection: Axis.vertical,
         child: Column(
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 spacing: 8,
                 children: List<Widget>.generate(
-                  40,
-                  (index) => const ActivityContainer(),
+                  10,
+                  (index) => ActivityContainer(index),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),

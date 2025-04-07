@@ -15,12 +15,13 @@ class ReprovedActivities extends StatelessWidget {
           children: [
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(8),
               child: Column(
                 spacing: 8,
                 children: List<Widget>.generate(
                   4,
-                  (index) => const ActivityContainer(
+                  (index) => ActivityContainer(
+                    index,
                     isReproved: true,
                   ),
                 ),
