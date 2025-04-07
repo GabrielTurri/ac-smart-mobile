@@ -1,0 +1,2 @@
+C:/www/ac-smart-mobile/android/app/.cxx/RelWithDebInfo/71b491r4/x86_64/CMakeFiles/edit_cache.dir
+C:/www/ac-smart-mobile/android/app/.cxx/RelWithDebInfo/71b491r4/x86_64/CMakeFiles/rebuild_cache.dir

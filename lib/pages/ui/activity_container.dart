@@ -13,7 +13,12 @@ class ActivityContainer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Activity atividade = Activity(id: idAtividade);
+    Activity atividade = ConsultarAtividade(idAtividade);
+
+    // List<Activity> atividades = [];
+    // for (var i = 0; i < atividadeController.atividades.length; i++) {
+    //   atividades.add(atividadeController.ConsultarAtividade(i));
+    // }
 
     Icon tileIcon = const Icon(
       Icons.pending,

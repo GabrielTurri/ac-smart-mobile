@@ -1,3 +1,4 @@
+import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/app_drawer.dart';
 import 'package:flutter/material.dart';
@@ -55,7 +56,7 @@ class Dashboard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () => context.push('/activities'),
+                        onPressed: () {},
                         style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xff476988),
                             shape: RoundedRectangleBorder(

@@ -6,7 +6,7 @@ class Activity {
   final int horasSolicitadas;
   final int horasAprovadas = 0;
   final DateTime dataEntrega = DateTime.now();
-  final String status = 'Pendente';
+  final String status;
 
   int pageIndex = 0;
   Activity({
@@ -14,9 +14,29 @@ class Activity {
     this.descricao = 'Certificado: HTML Básico',
     this.anexo = 'teste.png',
     this.horasSolicitadas = 4,
+    this.status = 'Pendente',
   });
 
   // cadastrarAtividade() {
 
   // }
+}
+
+get atividades => _atividades;
+
+final List<Activity> _atividades = [
+  Activity(id: 1, descricao: 'Palestra Python', horasSolicitadas: 4),
+  Activity(
+      id: 2,
+      descricao: 'Palestra Machine Learning',
+      horasSolicitadas: 8,
+      status: 'Reprovada'),
+  Activity(
+      id: 3,
+      descricao: 'Certificado: HTML Básico',
+      horasSolicitadas: 4,
+      status: 'Aprovada'),
+];
+Activity ConsultarAtividade(index) {
+  return atividades[index];
 }

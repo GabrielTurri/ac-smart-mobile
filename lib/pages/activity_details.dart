@@ -1,5 +1,6 @@
 // import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
+import 'package:ac_smart/pages/ui/button.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
@@ -23,21 +24,29 @@ class InserirAtividade extends StatelessWidget {
       appBar: const ACSmartAppBar(title: 'Inserir Nova Atividade'),
       body: Container(
         padding: const EdgeInsets.all(16),
-        child: const Column(
+        child: Column(
           spacing: 8,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextField(
-              decoration: InputDecoration(labelText: 'Descrição'),
+            const SingleChildScrollView(
+              child: Column(
+                children: [
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Descrição'),
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Anexos'),
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Data da atividade'),
+                  ),
+                  TextField(
+                    decoration: InputDecoration(labelText: 'Descrição'),
+                  ),
+                ],
+              ),
             ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Anexos'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Data da atividade'),
-            ),
-            TextField(
-              decoration: InputDecoration(labelText: 'Descrição'),
-            ),
+            ACSmartButton(onPressed: () {}, text: 'Enviar')
           ],
         ),
       ),
@@ -60,7 +69,7 @@ class EditarAtividade extends StatelessWidget {
 
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Editar Atividade'),
-      body: Container(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           spacing: 8,

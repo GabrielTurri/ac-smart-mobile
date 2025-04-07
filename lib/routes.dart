@@ -1,7 +1,7 @@
 import 'package:ac_smart/pages/activities.dart';
 import 'package:ac_smart/pages/home_page.dart';
 import 'package:ac_smart/pages/login.dart';
-import 'package:ac_smart/pages/ui/activity_details.dart';
+import 'package:ac_smart/pages/activity_details.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {
@@ -24,18 +24,18 @@ class Routes {
             GoRoute(
               path: ':id',
               builder: (context, state) {
-                final id = int.parse(state.pathParameters['id']!);
+                final id = int.tryParse(state.pathParameters['id']!);
                 return ActivityDetails(activityId: id);
               },
-            )
+            ),
+            GoRoute(
+              path: 'new',
+              builder: (context, state) => const ActivityDetails(),
+            ),
           ]),
       GoRoute(
         path: '/login',
         builder: (context, state) => const ACSMartLogin(),
-      ),
-      GoRoute(
-        path: '/activities/new',
-        builder: (context, state) => const ActivityDetails(),
       ),
     ],
   );
