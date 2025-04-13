@@ -1,17 +1,16 @@
 // import 'package:ac_smart/models/activity.dart';
+import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/button.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
-  const ActivityDetails({super.key, this.activityId});
-  final int? activityId;
+  const ActivityDetails({super.key, this.id});
+  final int? id;
 
   @override
   Widget build(BuildContext context) {
-    return (activityId == null)
-        ? const InserirAtividade()
-        : EditarAtividade(activityId: activityId!);
+    return (id == null) ? const InserirAtividade() : EditarAtividade(id: id!);
   }
 }
 
@@ -23,25 +22,27 @@ class InserirAtividade extends StatelessWidget {
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Inserir Nova Atividade'),
       body: Container(
+        margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),
         child: Column(
-          spacing: 8,
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const SingleChildScrollView(
+            SingleChildScrollView(
               child: Column(
+                spacing: 16,
                 children: [
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Descrição'),
+                  const TextField(
+                    decoration: InputDecoration(
+                        labelText: 'Descrição', border: OutlineInputBorder()),
                   ),
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Anexos'),
+                  const TextField(
+                    decoration: InputDecoration(
+                        labelText: 'Anexos', border: OutlineInputBorder()),
                   ),
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Data da atividade'),
-                  ),
-                  TextField(
-                    decoration: InputDecoration(labelText: 'Descrição'),
+                  CalendarioInput(DateTime.now()),
+                  const TextField(
+                    decoration: InputDecoration(
+                        labelText: 'Descrição', border: OutlineInputBorder()),
                   ),
                 ],
               ),
@@ -55,17 +56,21 @@ class InserirAtividade extends StatelessWidget {
 }
 
 class EditarAtividade extends StatelessWidget {
-  const EditarAtividade({
+  EditarAtividade({
     super.key,
-    required this.activityId,
+    required this.id,
   });
 
-  final int activityId;
+  final int id;
 
   @override
   Widget build(BuildContext context) {
-    // Activity atividade = Activity(id: activityId);
-    // Aqui ele precisa encontrar a atividade já cadastrada
+    final atividade = consultarAtividade(id);
+
+    TextEditingController descricaoController =
+        TextEditingController(text: atividade.descricao);
+    DateTime dataAtividade = atividade.dataAtividade;
+    TextEditingController horasSolicitadasController;
 
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Editar Atividade'),
@@ -75,24 +80,58 @@ class EditarAtividade extends StatelessWidget {
           spacing: 8,
           children: [
             Text(
-              'Consultando a atividade id: $activityId',
+              'Consultando: ${atividade.descricao}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Descrição'),
+            TextField(
+              controller: descricaoController,
+              decoration: const InputDecoration(
+                  labelText: 'Descrição', border: OutlineInputBorder()),
             ),
             const TextField(
-              decoration: InputDecoration(labelText: 'Anexos'),
+              decoration: InputDecoration(
+                  labelText: 'Anexos', border: OutlineInputBorder()),
             ),
+            CalendarioInput(dataAtividade),
             const TextField(
-              decoration: InputDecoration(labelText: 'Data da atividade'),
-            ),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Descrição'),
+              decoration: InputDecoration(
+                  labelText: 'Descrição', border: OutlineInputBorder()),
             ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class CalendarioInput extends StatelessWidget {
+  CalendarioInput(this.dataAtividade, {super.key});
+  DateTime dataAtividade;
+
+  @override
+  Widget build(BuildContext context) {
+    TextEditingController dataAtividadeController = TextEditingController(
+        text:
+            '${dataAtividade.day.toString().padLeft(2, '0')}/${dataAtividade.month.toString().padLeft(2, '0')}/${dataAtividade.year.toString()}');
+
+    return TextField(
+      controller: dataAtividadeController,
+      readOnly: true,
+      onTap: () => showDatePicker(
+        context: context,
+        helpText: 'Selecione a data da atividade',
+        initialDate: dataAtividade,
+        firstDate: dataAtividade.subtract(const Duration(days: 365)),
+        lastDate: DateTime.now(),
+        onDatePickerModeChange: (value) {
+          debugPrint(value.toString());
+        },
+      ),
+      decoration: const InputDecoration(
+          prefixIcon: Icon(Icons.calendar_month_outlined),
+          suffixIcon: Icon(Icons.arrow_drop_down_outlined),
+          labelText: 'Data da atividade',
+          border: OutlineInputBorder()),
     );
   }
 }

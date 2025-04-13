@@ -25,7 +25,7 @@ class Routes {
               path: ':id',
               builder: (context, state) {
                 final id = int.tryParse(state.pathParameters['id']!);
-                return ActivityDetails(activityId: id);
+                return ActivityDetails(id: id);
               },
             ),
             GoRoute(

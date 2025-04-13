@@ -54,9 +54,13 @@ class _HomePageState extends State<HomePage> {
         onPressed: () {
           context.push('/activities/new');
         },
-        label: const Icon(
+        icon: const Icon(
           Icons.note_add,
           color: Colors.white,
+        ),
+        label: const Text(
+          'Nova Atividade',
+          style: TextStyle(color: Colors.white),
         ),
         tooltip: 'Criar atividade',
         backgroundColor: const Color(0xff043565),

@@ -6,6 +6,7 @@ class Activity {
   final int horasSolicitadas;
   final int horasAprovadas = 0;
   final DateTime dataEntrega = DateTime.now();
+  final DateTime dataAtividade = DateTime.utc(2025, 04, 01);
   final String status;
 
   int pageIndex = 0;
@@ -25,14 +26,14 @@ class Activity {
 List<Activity> get atividades => _atividades;
 
 final List<Activity> _atividades = [
-  Activity(id: 1, descricao: 'Palestra Python', horasSolicitadas: 4),
+  Activity(id: 0, descricao: 'Palestra Python', horasSolicitadas: 4),
   Activity(
-      id: 2,
+      id: 1,
       descricao: 'Palestra Machine Learning',
       horasSolicitadas: 8,
       status: 'Reprovada'),
   Activity(
-      id: 3,
+      id: 2,
       descricao: 'Certificado: HTML Básico',
       horasSolicitadas: 4,
       status: 'Aprovada'),
