@@ -1,3 +1,4 @@
+import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/activities.dart';
 import 'package:ac_smart/pages/dashboard.dart';
 import 'package:ac_smart/pages/reproved_activities.dart';
@@ -25,20 +26,26 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    const destinationsList = [
-      NavigationDestination(
+    final destinationsList = [
+      const NavigationDestination(
         icon: Icon(Icons.dashboard_outlined, color: Colors.white),
         selectedIcon: Icon(Icons.dashboard, color: Colors.white),
         label: 'Dashboard',
       ),
-      NavigationDestination(
+      const NavigationDestination(
         icon: Icon(Icons.view_list_outlined, color: Colors.white),
         selectedIcon: Icon(Icons.view_list, color: Colors.white),
         label: 'Minhas ACs',
       ),
       NavigationDestination(
-        icon: Icon(Icons.cancel_schedule_send_outlined, color: Colors.white),
-        selectedIcon: Icon(Icons.cancel_schedule_send, color: Colors.white),
+        icon: Badge.count(
+          count: atividades.where((a) => a.status == "Reprovada").length,
+          backgroundColor: const Color(0xffFF9432),
+          child: const Icon(Icons.cancel_schedule_send_outlined,
+              color: Colors.white),
+        ),
+        selectedIcon:
+            const Icon(Icons.cancel_schedule_send, color: Colors.white),
         label: 'Reprovadas',
       ),
     ];

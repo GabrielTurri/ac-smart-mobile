@@ -22,7 +22,7 @@ class Activity {
   // }
 }
 
-get atividades => _atividades;
+List<Activity> get atividades => _atividades;
 
 final List<Activity> _atividades = [
   Activity(id: 1, descricao: 'Palestra Python', horasSolicitadas: 4),
@@ -37,6 +37,6 @@ final List<Activity> _atividades = [
       horasSolicitadas: 4,
       status: 'Aprovada'),
 ];
-Activity ConsultarAtividade(index) {
+Activity consultarAtividade(index) {
   return atividades[index];
 }
