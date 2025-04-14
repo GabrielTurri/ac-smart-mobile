@@ -15,14 +15,22 @@ def get_db_connection():
     Estabelece conexão com o banco de dados MongoDB
     Returns:
         database: Instância do banco de dados MongoDB
+    Raises:
+        Exception: Se não for possível conectar ao MongoDB
     """
     try:
-        client = MongoClient(MONGO_URI)
+        # Conectar ao MongoDB com timeout de 5 segundos
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        
+        # Forçar uma operação para verificar a conexão
+        client.server_info()
+        
+        # Se chegou aqui, a conexão está ok
         db = client[MONGO_DB]
         return db
+        
     except Exception as e:
-        print(f"Erro ao conectar ao MongoDB: {e}")
-        return None
+        raise Exception(f"Erro ao conectar ao MongoDB: {e}")
 
 # Função para testar a conexão com o banco de dados
 def test_connection():
