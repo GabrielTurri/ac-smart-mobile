@@ -1,0 +1,23 @@
+meta {
+  name: Login Aluno
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "aluno@exemplo.com",
+    "senha": "senha123",
+    "tipo": "aluno"
+  }
+}
