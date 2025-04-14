@@ -1,9 +1,41 @@
 import 'package:ac_smart/models/activity.dart';
-import 'package:ac_smart/pages/ui/activity_container.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 
-consultarAtividadeContainer(id) {
-  // filtro de reprovado ou não
-  // if (atividades[id]){
-  return ActivityContainer(id);
-  // }
+Future<void> selecionarArquivo(arquivoPath) async {
+  String arquivoPath = '';
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
+  );
+
+  if (result != null && result.files.single.path != null) {
+    arquivoPath = result.files.single.path!;
+  }
+}
+
+Future<void> selecionarData(context) async {
+  DateTime dataSelecionada = DateTime.now();
+  final DateTime? dataEscolhida = await showDatePicker(
+    context: context,
+    initialDate: dataSelecionada,
+    firstDate: DateTime(2020),
+    lastDate: DateTime.now(),
+  );
+  if (dataEscolhida != null) {
+    dataSelecionada = dataEscolhida;
+  }
+}
+
+void salvar(nome, statusSelecionado, dataSelecionada, arquivoPath, formKey) {
+  if (formKey.currentState!.validate()) {
+    formKey.currentState!.save();
+
+    cadastrarAtividade(
+      descricao: nome,
+      arquivoPath: arquivoPath,
+      dataAtividade: dataSelecionada,
+      statusSelecionado: statusSelecionado,
+    );
+  }
 }
