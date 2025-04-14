@@ -22,11 +22,11 @@ class Activity {
   });
 }
 
-void cadastrarAtividade({
-  descricao,
-  statusSelecionado,
-  dataAtividade,
-  arquivoPath,
+void incluirAtividade({
+  required descricao,
+  required statusSelecionado,
+  required dataAtividade,
+  required arquivoPath,
 }) {
   int novoId = atividades.last.id + 1;
   Activity novaAtividade = Activity(
@@ -36,7 +36,9 @@ void cadastrarAtividade({
     dataAtividade: dataAtividade,
     arquivoPath: arquivoPath,
   );
+  // atividades.add(novaAtividade);
   return debugPrint('Nova atividade cadastrada: \n$novaAtividade');
+  // Retornar uma mensagem de sucesso
 }
 
 List<Activity> get atividades => _atividades;

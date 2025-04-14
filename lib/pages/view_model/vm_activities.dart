@@ -2,8 +2,7 @@ import 'package:ac_smart/models/activity.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
-Future<void> selecionarArquivo(arquivoPath) async {
-  String arquivoPath = '';
+Future<void> selecionarArquivo({String arquivoPath = ''}) async {
   final result = await FilePicker.platform.pickFiles(
     type: FileType.custom,
     allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
@@ -13,6 +12,8 @@ Future<void> selecionarArquivo(arquivoPath) async {
     arquivoPath = result.files.single.path!;
   }
 }
+
+Future<void> selecionarStatus({required statusSelecionado}) async {}
 
 Future<void> selecionarData(context) async {
   DateTime dataSelecionada = DateTime.now();
@@ -31,7 +32,7 @@ void salvar(nome, statusSelecionado, dataSelecionada, arquivoPath, formKey) {
   if (formKey.currentState!.validate()) {
     formKey.currentState!.save();
 
-    cadastrarAtividade(
+    incluirAtividade(
       descricao: nome,
       arquivoPath: arquivoPath,
       dataAtividade: dataSelecionada,

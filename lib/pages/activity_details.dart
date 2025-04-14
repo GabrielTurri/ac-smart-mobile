@@ -2,6 +2,7 @@
 import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/button.dart';
+import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
@@ -10,12 +11,14 @@ class ActivityDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (id == null) ? const InserirAtividade() : EditarAtividade(id: id!);
+    return (id == null) ? InserirAtividade() : EditarAtividade(id: id!);
   }
 }
 
 class InserirAtividade extends StatelessWidget {
   const InserirAtividade({super.key});
+
+  final String _statusSelecionado = "Aprovada";
 
   @override
   Widget build(BuildContext context) {
@@ -40,9 +43,40 @@ class InserirAtividade extends StatelessWidget {
                         labelText: 'Anexos', border: OutlineInputBorder()),
                   ),
                   CalendarioInput(DateTime.now()),
-                  const TextField(
-                    decoration: InputDecoration(
-                        labelText: 'Descrição', border: OutlineInputBorder()),
+                  const Divider(),
+                  Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: const Text('Aprovada'),
+                        leading: Radio<String>(
+                          value: 'Aprovada',
+                          groupValue: _statusSelecionado,
+                          onChanged: (String? value) {
+                            selecionarStatus(statusSelecionado: value);
+                          },
+                        ),
+                      ),
+                      ListTile(
+                        title: const Text('Pendente'),
+                        leading: Radio<String>(
+                          value: 'Pendente',
+                          groupValue: _statusSelecionado,
+                          onChanged: (String? value) {
+                            selecionarStatus(statusSelecionado: value);
+                          },
+                        ),
+                      ),
+                      ListTile(
+                        title: const Text('Reprovada'),
+                        leading: Radio<String>(
+                          value: 'Reprovada',
+                          groupValue: _statusSelecionado,
+                          onChanged: (String? value) {
+                            selecionarStatus(statusSelecionado: value);
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
