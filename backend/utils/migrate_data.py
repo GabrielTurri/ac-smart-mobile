@@ -1,258 +1,305 @@
-#!/usr/bin/env python3
 """
-Script para migrar dados do MySQL para o MongoDB.
-Este script lê os dados do banco de dados MySQL antigo e os insere no MongoDB.
+MySQL to MongoDB Migration Script for Humanitae Database
 
-Uso:
-    python migrate_data.py --mysql-host=localhost --mysql-user=root --mysql-password=password --mysql-db=humanitae_db
+This script migrates data from a MySQL database to MongoDB following a document-oriented
+approach, transforming relational tables into document collections.
 
-Autor: Gabriel Turri
-Data: Abril 2025
+Requirements:
+- mysql-connector-python
+- pymongo
+- python-dotenv (optional, for loading environment variables)
+
+Usage:
+1. Configure the database connections in the script or through environment variables
+2. Run the script: python migrate_to_mongodb.py
 """
 
-import argparse
-import pymysql
-import hashlib
-from config.database import get_db_connection
-from bson.objectid import ObjectId
+import mysql.connector
+from mysql.connector import Error
+from pymongo import MongoClient
 from datetime import datetime
-import sys
+import logging
+import os
+from dotenv import load_dotenv  # Optional
 
-def parse_args():
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description='Migrar dados do MySQL para o MongoDB')
-    
-    parser.add_argument('--mysql-host', required=True, help='Host do MySQL')
-    parser.add_argument('--mysql-user', required=True, help='Usuário do MySQL')
-    parser.add_argument('--mysql-password', required=True, help='Senha do MySQL')
-    parser.add_argument('--mysql-db', required=True, help='Nome do banco de dados MySQL')
-    parser.add_argument('--mysql-port', type=int, default=3306, help='Porta do MySQL (padrão: 3306)')
-    
-    return parser.parse_args()
+# Load environment variables if .env file exists
+try:
+    load_dotenv()
+except ImportError:
+    pass
 
-def connect_mysql(host, user, password, db, port):
-    """Conecta ao banco de dados MySQL."""
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler("migration.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger()
+
+# Database configuration
+# You can set these as environment variables or hardcode for testing
+MYSQL_CONFIG = {
+    'host': os.getenv('MYSQL_HOST', 'localhost'),
+    'database': os.getenv('MYSQL_DB', 'humanitae_db'),
+    'user': os.getenv('MYSQL_USER', 'root'),
+    'password': os.getenv('MYSQL_PASSWORD', ''),
+}
+
+MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
+MONGO_DB = os.getenv('MONGO_DB', 'ac_smart_db')
+
+def connect_mysql():
+    """Connect to MySQL database"""
     try:
-        connection = pymysql.connect(
-            host=host,
-            user=user,
-            password=password,
-            database=db,
-            port=port,
-            charset='utf8mb4',
-            cursorclass=pymysql.cursors.DictCursor
-        )
-        print(f"✅ Conexão com MySQL estabelecida: {host}:{port}/{db}")
-        return connection
+        connection = mysql.connector.connect(**MYSQL_CONFIG)
+        if connection.is_connected():
+            logger.info(f"Connected to MySQL database: {MYSQL_CONFIG['database']}")
+            return connection
+    except Error as e:
+        logger.error(f"Error connecting to MySQL: {e}")
+        return None
+
+def connect_mongodb():
+    """Connect to MongoDB"""
+    try:
+        client = MongoClient(MONGO_URI)
+        db = client[MONGO_DB]
+        logger.info(f"Connected to MongoDB: {MONGO_DB}")
+        return db
     except Exception as e:
-        print(f"❌ Erro ao conectar ao MySQL: {e}")
-        sys.exit(1)
+        logger.error(f"Error connecting to MongoDB: {e}")
+        return None
 
-def migrate_coordenadores(mysql_conn, mongodb):
-    """Migra os coordenadores do MySQL para o MongoDB."""
-    print("\n🔄 Migrando coordenadores...")
-    coordenadores_collection = mongodb.coordenadores
-    
-    # Limpar coleção existente
-    coordenadores_collection.delete_many({})
-    
-    # Mapear IDs antigos para novos
-    id_mapping = {}
-    
-    with mysql_conn.cursor() as cursor:
+def clean_mongodb(db):
+    """Clean existing collections in MongoDB before migration"""
+    try:
+        collections = ['users', 'courses', 'activities']
+        for collection in collections:
+            if collection in db.list_collection_names():
+                db[collection].drop()
+                logger.info(f"Dropped collection: {collection}")
+    except Exception as e:
+        logger.error(f"Error cleaning MongoDB: {e}")
+
+def migrate_coordenadores(mysql_conn, mongo_db):
+    """Migrate coordinators from MySQL to MongoDB"""
+    try:
+        cursor = mysql_conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM coordenador")
-        coordenadores = cursor.fetchall()
+        coordinators = cursor.fetchall()
         
-        for coordenador in coordenadores:
-            # Hash da senha para segurança
-            senha_hash = hashlib.sha256(
-                coordenador.get('senha_coordenador', 'senha_padrao').encode()
-            ).hexdigest()
-            
-            novo_coordenador = {
-                'nome_coordenador': coordenador.get('nome_coordenador', ''),
-                'sobrenome_coordenador': coordenador.get('sobrenome_coordenador', ''),
-                'email_coordenador': coordenador.get('email_coordenador', ''),
-                'senha_coordenador': senha_hash,
-                'mysql_id': coordenador.get('cod_coordenador')
+        users_collection = mongo_db.users
+        
+        for coordinator in coordinators:
+            # Create new coordinator document
+            coordinator_doc = {
+                "role": "coordenador",
+                "codigo": str(coordinator['cod_coordenador']),
+                "nome": coordinator['nome_coordenador'],
+                "sobrenome": coordinator['sobrenome_coordenador'],
+                "email": coordinator['email_coordenador'],
+                "senha": coordinator['senha_coordenador'],
+                "cursos_coordenados": []  # Will be populated when migrating courses
             }
             
-            resultado = coordenadores_collection.insert_one(novo_coordenador)
-            id_mapping[coordenador.get('cod_coordenador')] = resultado.inserted_id
-            
-    print(f"✅ {len(id_mapping)} coordenadores migrados.")
-    return id_mapping
-
-def migrate_cursos(mysql_conn, mongodb, coordenadores_mapping):
-    """Migra os cursos do MySQL para o MongoDB."""
-    print("\n🔄 Migrando cursos...")
-    cursos_collection = mongodb.cursos
-    
-    # Limpar coleção existente
-    cursos_collection.delete_many({})
-    
-    # Mapear IDs antigos para novos
-    id_mapping = {}
-    
-    with mysql_conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM curso")
-        cursos = cursor.fetchall()
+            # Insert into MongoDB
+            result = users_collection.insert_one(coordinator_doc)
+            logger.info(f"Inserted coordinator: {coordinator['nome_coordenador']} with ID: {result.inserted_id}")
         
-        for curso in cursos:
-            coordenador_id = curso.get('coordenador_curso')
-            
-            novo_curso = {
-                'nome_curso': curso.get('nome_curso', ''),
-                'horas_complementares': curso.get('horas_complementares', 0),
-                'coordenador_id': str(coordenadores_mapping.get(coordenador_id)) if coordenador_id in coordenadores_mapping else None,
-                'mysql_id': curso.get('cod_curso')
-            }
-            
-            resultado = cursos_collection.insert_one(novo_curso)
-            id_mapping[curso.get('cod_curso')] = resultado.inserted_id
-            
-    print(f"✅ {len(id_mapping)} cursos migrados.")
-    return id_mapping
+        logger.info(f"Migrated {len(coordinators)} coordinators")
+    except Exception as e:
+        logger.error(f"Error migrating coordinators: {e}")
 
-def migrate_alunos(mysql_conn, mongodb, cursos_mapping):
-    """Migra os alunos do MySQL para o MongoDB."""
-    print("\n🔄 Migrando alunos...")
-    alunos_collection = mongodb.alunos
-    
-    # Limpar coleção existente
-    alunos_collection.delete_many({})
-    
-    # Mapear IDs antigos para novos
-    id_mapping = {}
-    
-    with mysql_conn.cursor() as cursor:
+def migrate_alunos(mysql_conn, mongo_db):
+    """Migrate students from MySQL to MongoDB"""
+    try:
+        cursor = mysql_conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM aluno")
-        alunos = cursor.fetchall()
+        students = cursor.fetchall()
         
-        for aluno in cursos:
-            curso_id = aluno.get('cod_curso')
-            
-            # Hash da senha para segurança
-            senha_hash = hashlib.sha256(
-                aluno.get('senha_aluno', 'senha_padrao').encode()
-            ).hexdigest()
-            
-            novo_aluno = {
-                'ra_aluno': aluno.get('RA_aluno'),
-                'nome_aluno': aluno.get('nome_aluno', ''),
-                'sobrenome_aluno': aluno.get('sobrenome_aluno', ''),
-                'email_aluno': aluno.get('email_aluno', ''),
-                'curso_id': str(cursos_mapping.get(curso_id)) if curso_id in cursos_mapping else None,
-                'senha_aluno': senha_hash,
-                'mysql_id': aluno.get('RA_aluno')
+        users_collection = mongo_db.users
+        
+        for student in students:
+            # Create new student document
+            student_doc = {
+                "role": "aluno",
+                "codigo": str(student['RA_aluno']),
+                "nome": student['nome_aluno'],
+                "sobrenome": student['sobrenome_aluno'],
+                "email": student['email_aluno'],
+                "senha": student['senha_aluno'],
+                "curso_id": str(student['cod_curso'])
             }
             
-            resultado = alunos_collection.insert_one(novo_aluno)
-            id_mapping[aluno.get('RA_aluno')] = resultado.inserted_id
-            
-    print(f"✅ {len(id_mapping)} alunos migrados.")
-    return id_mapping
+            # Insert into MongoDB
+            result = users_collection.insert_one(student_doc)
+            logger.info(f"Inserted student: {student['nome_aluno']} with ID: {result.inserted_id}")
+        
+        logger.info(f"Migrated {len(students)} students")
+    except Exception as e:
+        logger.error(f"Error migrating students: {e}")
 
-def migrate_atividades(mysql_conn, mongodb, alunos_mapping):
-    """Migra as atividades complementares do MySQL para o MongoDB."""
-    print("\n🔄 Migrando atividades complementares...")
-    atividades_collection = mongodb.atividades
-    observacoes_collection = mongodb.observacoes
-    
-    # Limpar coleções existentes
-    atividades_collection.delete_many({})
-    observacoes_collection.delete_many({})
-    
-    # Mapear IDs antigos para novos
-    id_mapping = {}
-    
-    with mysql_conn.cursor() as cursor:
+def migrate_cursos_disciplinas(mysql_conn, mongo_db):
+    """Migrate courses and disciplines from MySQL to MongoDB"""
+    try:
+        cursor = mysql_conn.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM curso")
+        courses = cursor.fetchall()
+        
+        courses_collection = mongo_db.courses
+        users_collection = mongo_db.users
+        
+        for course in courses:
+            # Get disciplines for this course
+            cursor.execute("SELECT * FROM disciplina WHERE cod_curso = %s", (course['cod_curso'],))
+            disciplines = cursor.fetchall()
+            
+            # Format disciplines as embedded documents
+            disciplines_docs = []
+            for discipline in disciplines:
+                disciplines_docs.append({
+                    "nome": discipline['nome'],
+                    "descricao": discipline['descricao']
+                })
+            
+            # Create course document
+            course_doc = {
+                "_id": str(course['cod_curso']),
+                "nome": course['nome_curso'],
+                "horas_complementares": course['horas_complementares'],
+                "coordenador_id": str(course['coordenador_curso']),
+                "disciplinas": disciplines_docs
+            }
+            
+            # Insert into MongoDB
+            result = courses_collection.insert_one(course_doc)
+            logger.info(f"Inserted course: {course['nome_curso']} with ID: {result.inserted_id}")
+            
+            # Update coordinator's cursos_coordenados array
+            users_collection.update_one(
+                {"role": "coordenador", "codigo": str(course['coordenador_curso'])},
+                {"$push": {"cursos_coordenados": str(course['cod_curso'])}}
+            )
+        
+        logger.info(f"Migrated {len(courses)} courses with their disciplines")
+    except Exception as e:
+        logger.error(f"Error migrating courses and disciplines: {e}")
+
+def migrate_atividades_observacoes(mysql_conn, mongo_db):
+    """Migrate activities and observations from MySQL to MongoDB"""
+    try:
+        cursor = mysql_conn.cursor(dictionary=True)
         cursor.execute("SELECT * FROM atividade_complementar")
-        atividades = cursor.fetchall()
+        activities = cursor.fetchall()
         
-        for atividade in atividades:
-            aluno_id = atividade.get('RA_aluno')
+        activities_collection = mongo_db.activities
+        
+        for activity in activities:
+            # Get observations for this activity
+            cursor.execute("SELECT * FROM observacao_atividade WHERE cod_atividade = %s", (activity['cod_atividade'],))
+            observations = cursor.fetchall()
             
-            nova_atividade = {
-                'titulo': atividade.get('titulo', ''),
-                'descricao': atividade.get('descricao', ''),
-                'anexo': atividade.get('caminho_anexo', ''),
-                'horas_solicitadas': atividade.get('horas_solicitadas', 0),
-                'horas_aprovadas': atividade.get('horas_aprovadas', 0),
-                'data': atividade.get('data'),
-                'status': atividade.get('status', 'Pendente'),
-                'aluno_id': str(alunos_mapping.get(aluno_id)) if aluno_id in alunos_mapping else None,
-                'data_criacao': datetime.strptime(str(atividade.get('atividade_complementar_timestamp')), '%Y-%m-%d %H:%M:%S') if atividade.get('atividade_complementar_timestamp') else datetime.now(),
-                'mysql_id': atividade.get('cod_atividade')
+            # Format observations as embedded documents
+            observations_docs = []
+            for observation in observations:
+                observations_docs.append({
+                    "observacao": observation['observacao'],
+                    "created_at": observation.get('observacao_atividade_timestamp') or datetime.now()
+                })
+            
+            # Create activity document
+            activity_doc = {
+                "_id": str(activity['cod_atividade']),
+                "aluno_id": str(activity['RA_aluno']),
+                "titulo": activity['titulo'],
+                "descricao": activity['descricao'],
+                "caminho_anexo": activity['caminho_anexo'],
+                "horas_solicitadas": activity['horas_solicitadas'],
+                "horas_aprovadas": activity['horas_aprovadas'],
+                "data": activity['data'],
+                "status": activity['status'],
+                "created_at": activity.get('atividade_complementar_timestamp') or datetime.now(),
+                "observacoes": observations_docs
             }
             
-            resultado = atividades_collection.insert_one(nova_atividade)
-            id_mapping[atividade.get('cod_atividade')] = resultado.inserted_id
-            
-    print(f"✅ {len(id_mapping)} atividades complementares migradas.")
-    
-    # Migrar observações das atividades
-    print("\n🔄 Migrando observações de atividades...")
-    observacoes_count = 0
-    
-    with mysql_conn.cursor() as cursor:
-        cursor.execute("SELECT * FROM observacao_atividade")
-        observacoes = cursor.fetchall()
+            # Insert into MongoDB
+            result = activities_collection.insert_one(activity_doc)
+            logger.info(f"Inserted activity: {activity['titulo']} with ID: {result.inserted_id}")
         
-        for observacao in observacoes:
-            atividade_id = observacao.get('cod_atividade')
-            
-            nova_observacao = {
-                'observacao': observacao.get('observacao', ''),
-                'atividade_id': str(id_mapping.get(atividade_id)) if atividade_id in id_mapping else None,
-                'data_criacao': datetime.strptime(str(observacao.get('observacao_atividade_timestamp')), '%Y-%m-%d %H:%M:%S') if observacao.get('observacao_atividade_timestamp') else datetime.now(),
-                'mysql_id': observacao.get('cod_observacao')
-            }
-            
-            if nova_observacao['atividade_id']:
-                observacoes_collection.insert_one(nova_observacao)
-                observacoes_count += 1
-            
-    print(f"✅ {observacoes_count} observações de atividades migradas.")
-    
-    return id_mapping
+        logger.info(f"Migrated {len(activities)} activities with their observations")
+    except Exception as e:
+        logger.error(f"Error migrating activities and observations: {e}")
+
+def create_indexes(mongo_db):
+    """Create indexes for better query performance"""
+    try:
+        # Indexes for users collection
+        mongo_db.users.create_index("codigo")
+        mongo_db.users.create_index("email")
+        mongo_db.users.create_index("role")
+        
+        # Indexes for activities collection
+        mongo_db.activities.create_index("aluno_id")
+        mongo_db.activities.create_index("status")
+        
+        logger.info("Created indexes for better query performance")
+    except Exception as e:
+        logger.error(f"Error creating indexes: {e}")
+
+def migration_complete(mongo_db):
+    """Log some stats after migration is complete"""
+    try:
+        users_count = mongo_db.users.count_documents({})
+        coordinator_count = mongo_db.users.count_documents({"role": "coordenador"})
+        student_count = mongo_db.users.count_documents({"role": "aluno"})
+        courses_count = mongo_db.courses.count_documents({})
+        activities_count = mongo_db.activities.count_documents({})
+        
+        logger.info("Migration complete!")
+        logger.info(f"Total users: {users_count} (Coordinators: {coordinator_count}, Students: {student_count})")
+        logger.info(f"Total courses: {courses_count}")
+        logger.info(f"Total activities: {activities_count}")
+    except Exception as e:
+        logger.error(f"Error generating migration stats: {e}")
 
 def main():
-    """Função principal."""
-    args = parse_args()
+    """Main migration function"""
+    logger.info("Starting migration from MySQL to MongoDB")
     
-    print("🚀 Iniciando migração de dados do MySQL para o MongoDB...")
+    # Connect to databases
+    mysql_conn = connect_mysql()
+    mongo_db = connect_mongodb()
     
-    # Conexões com os bancos de dados
-    mysql_conn = connect_mysql(
-        args.mysql_host, 
-        args.mysql_user, 
-        args.mysql_password, 
-        args.mysql_db, 
-        args.mysql_port
-    )
-    
-    mongodb = get_db_connection()
-    if not mongodb:
-        print("❌ Falha na conexão com o MongoDB.")
-        sys.exit(1)
-    
-    print("✅ Conexão com MongoDB estabelecida")
+    if not mysql_conn or not mongo_db:
+        logger.error("Failed to connect to one or both databases. Exiting.")
+        return
     
     try:
-        # Migrar dados
-        coordenadores_mapping = migrate_coordenadores(mysql_conn, mongodb)
-        cursos_mapping = migrate_cursos(mysql_conn, mongodb, coordenadores_mapping)
-        alunos_mapping = migrate_alunos(mysql_conn, mongodb, cursos_mapping)
-        atividades_mapping = migrate_atividades(mysql_conn, mongodb, alunos_mapping)
+        # Clean MongoDB collections before migration
+        clean_mongodb(mongo_db)
         
-        print("\n✅ Migração de dados concluída com sucesso!")
+        # Migrate data
+        migrate_coordenadores(mysql_conn, mongo_db)
+        migrate_alunos(mysql_conn, mongo_db)
+        migrate_cursos_disciplinas(mysql_conn, mongo_db)
+        migrate_atividades_observacoes(mysql_conn, mongo_db)
+        
+        # Create indexes for better query performance
+        create_indexes(mongo_db)
+        
+        # Log migration stats
+        migration_complete(mongo_db)
         
     except Exception as e:
-        print(f"\n❌ Erro durante a migração: {e}")
-        sys.exit(1)
+        logger.error(f"Migration failed: {e}")
     finally:
-        mysql_conn.close()
-        
+        # Close MySQL connection
+        if mysql_conn and mysql_conn.is_connected():
+            mysql_conn.close()
+            logger.info("MySQL connection closed")
+
 if __name__ == "__main__":
     main()
