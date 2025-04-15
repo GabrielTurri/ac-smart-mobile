@@ -6,19 +6,16 @@ class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
   List<Activity> _atividades = [
     Activity(
-        id: 0,
         descricao: 'Palestra Python',
         horasSolicitadas: 4,
         dataAtividade: DateTime(2025, 04)),
     Activity(
-      id: 1,
       descricao: 'Palestra Machine Learning',
       horasSolicitadas: 8,
       status: 'Reprovada',
       dataAtividade: DateTime(2025, 04),
     ),
     Activity(
-      id: 2,
       descricao: 'Certificado: HTML Básico',
       horasSolicitadas: 4,
       status: 'Aprovada',
@@ -33,8 +30,8 @@ class AtividadeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Activity consultarAtividade(index) {
-    return _atividades[index];
+  Activity consultarAtividade(id) {
+    return _atividades.firstWhere((a) => a.id == id);
   }
 
   Future<void> selecionarArquivo({String arquivoPath = ''}) async {

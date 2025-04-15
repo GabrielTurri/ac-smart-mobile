@@ -1,8 +1,10 @@
-import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
+
+var uuid = const Uuid();
 
 class Activity {
-  final int id;
+  final String id = uuid.v4();
   final int raAluno = 123456;
   final String descricao;
   final String arquivoPath;
@@ -14,7 +16,6 @@ class Activity {
 
   int pageIndex = 0;
   Activity({
-    required this.id,
     this.descricao = 'Certificado: HTML Básico',
     this.arquivoPath = 'teste.png',
     required this.dataAtividade,
@@ -29,9 +30,7 @@ void incluirAtividade({
   required dataAtividade,
   required arquivoPath,
 }) {
-  int novoId = AtividadeProvider().atividades.last.id + 1;
   Activity novaAtividade = Activity(
-    id: novoId,
     descricao: descricao,
     status: statusSelecionado,
     dataAtividade: dataAtividade,

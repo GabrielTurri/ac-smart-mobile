@@ -18,7 +18,7 @@ class ACSmartAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       centerTitle: true,
       backgroundColor: AppColor().darkBlue,
-      // Teste usando a variável criada, porém preciso ver como busacar apenas por AppColor.darkblue
+      // Teste usando a variável criada, porém preciso ver como buscar apenas por AppColor.darkblue
       // backgroundColor: const Color(0xff043565),
 
       iconTheme: const IconThemeData(color: Colors.white),

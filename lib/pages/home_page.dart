@@ -55,19 +55,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          // context.push('/activities/new');
-          Activity novaAtividade = Activity(
-            id: Provider.of<AtividadeProvider>(context, listen: false)
-                    .atividades
-                    .last
-                    .id +
-                1,
-            descricao: 'Teste inserção atividade',
-            horasSolicitadas: 4,
-            status: 'Aprovada',
-            dataAtividade: DateTime(2025, 04),
-          );
-          context.read<AtividadeProvider>().adicionarAtividade(novaAtividade);
+          context.push('/activities/new');
         },
         icon: const Icon(
           Icons.note_add,

@@ -1,7 +1,5 @@
 // import 'package:ac_smart/models/activity.dart';
 
-import 'package:ac_smart/models/activity.dart';
-
 import 'package:provider/provider.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/button.dart';
@@ -9,12 +7,12 @@ import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
-  const ActivityDetails({super.key, this.id});
-  final int? id;
+  const ActivityDetails({super.key, this.id = ''});
+  final String id;
 
   @override
   Widget build(BuildContext context) {
-    return (id == null) ? const InserirAtividade() : EditarAtividade(id: id!);
+    return (id.isEmpty) ? const InserirAtividade() : EditarAtividade(id: id);
   }
 }
 
@@ -68,7 +66,7 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       ElevatedButton(
                         onPressed: () =>
                             atividadeProvider.selecionarData(context),
-                        child: Text('Selecionar Data'),
+                        child: const Text('Selecionar Data'),
                       ),
                     ],
                   ),
@@ -125,16 +123,16 @@ class EditarAtividade extends StatelessWidget {
     required this.id,
   });
 
-  final int id;
+  final String id;
 
   @override
   Widget build(BuildContext context) {
-    final atividade = context.watch<AtividadeProvider>().atividades[id];
+    final atividade = context.read<AtividadeProvider>().consultarAtividade(id);
 
     TextEditingController descricaoController =
         TextEditingController(text: atividade.descricao);
     DateTime dataAtividade = atividade.dataAtividade;
-    TextEditingController horasSolicitadasController;
+    TextEditingController horasSolicitadasController = TextEditingController();
 
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Editar Atividade'),
@@ -157,9 +155,10 @@ class EditarAtividade extends StatelessWidget {
                   labelText: 'Anexos', border: OutlineInputBorder()),
             ),
             CalendarioInput(dataAtividade),
-            const TextField(
-              decoration: InputDecoration(
-                  labelText: 'Descrição', border: OutlineInputBorder()),
+            TextField(
+              controller: horasSolicitadasController,
+              decoration: const InputDecoration(
+                  labelText: 'Horas Solicitadas', border: OutlineInputBorder()),
             ),
           ],
         ),
