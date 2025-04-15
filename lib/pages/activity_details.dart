@@ -1,5 +1,8 @@
 // import 'package:ac_smart/models/activity.dart';
+
 import 'package:ac_smart/models/activity.dart';
+
+import 'package:provider/provider.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/button.dart';
 import 'package:ac_smart/pages/view_model/vm_activities.dart';
@@ -11,17 +14,26 @@ class ActivityDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return (id == null) ? InserirAtividade() : EditarAtividade(id: id!);
+    return (id == null) ? const InserirAtividade() : EditarAtividade(id: id!);
   }
 }
 
-class InserirAtividade extends StatelessWidget {
+class InserirAtividade extends StatefulWidget {
   const InserirAtividade({super.key});
 
-  final String _statusSelecionado = "Aprovada";
+  @override
+  State<InserirAtividade> createState() => _InserirAtividadeState();
+}
+
+class _InserirAtividadeState extends State<InserirAtividade> {
+  final _descricaoController = TextEditingController();
+  String? _anexo;
+  DateTime? _data;
 
   @override
   Widget build(BuildContext context) {
+    final atividadeProvider = context.read<AtividadeProvider>();
+    final watchAtividadeProvider = context.watch<AtividadeProvider>();
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Inserir Nova Atividade'),
       body: Container(
@@ -34,54 +46,72 @@ class InserirAtividade extends StatelessWidget {
               child: Column(
                 spacing: 16,
                 children: [
-                  const TextField(
-                    decoration: InputDecoration(
+                  TextField(
+                    controller: _descricaoController,
+                    decoration: const InputDecoration(
                         labelText: 'Descrição', border: OutlineInputBorder()),
                   ),
-                  const TextField(
-                    decoration: InputDecoration(
-                        labelText: 'Anexos', border: OutlineInputBorder()),
+                  ElevatedButton(
+                    onPressed: atividadeProvider.selecionarArquivo,
+                    child: const Text('Selecionar Anexo'),
                   ),
+                  Text(_anexo != null
+                      ? 'Anexo: $_anexo'
+                      : 'Nenhum anexo selecionado'),
                   CalendarioInput(DateTime.now()),
-                  const Divider(),
-                  Column(
-                    children: <Widget>[
-                      ListTile(
-                        title: const Text('Aprovada'),
-                        leading: Radio<String>(
-                          value: 'Aprovada',
-                          groupValue: _statusSelecionado,
-                          onChanged: (String? value) {
-                            selecionarStatus(statusSelecionado: value);
-                          },
-                        ),
-                      ),
-                      ListTile(
-                        title: const Text('Pendente'),
-                        leading: Radio<String>(
-                          value: 'Pendente',
-                          groupValue: _statusSelecionado,
-                          onChanged: (String? value) {
-                            selecionarStatus(statusSelecionado: value);
-                          },
-                        ),
-                      ),
-                      ListTile(
-                        title: const Text('Reprovada'),
-                        leading: Radio<String>(
-                          value: 'Reprovada',
-                          groupValue: _statusSelecionado,
-                          onChanged: (String? value) {
-                            selecionarStatus(statusSelecionado: value);
-                          },
-                        ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(_data != null
+                          ? 'Data: ${_data!.toLocal()}'.split(' ')[0]
+                          : 'Nenhuma data selecionada'),
+                      ElevatedButton(
+                        onPressed: () =>
+                            atividadeProvider.selecionarData(context),
+                        child: Text('Selecionar Data'),
                       ),
                     ],
+                  ),
+                  const Divider(),
+                  DropdownButton<String>(
+                    padding: const EdgeInsets.all(8),
+                    hint: const Text('Selecione o Status'),
+                    value: watchAtividadeProvider.statusSelecionado,
+                    onChanged: (String? newValue) {
+                      if (newValue != null) {
+                        atividadeProvider.selecionarStatus(
+                            statusSelecionado: newValue);
+                      }
+                    },
+                    items: <String>['Reprovada', 'Pendente', 'Aprovada']
+                        .map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
                   ),
                 ],
               ),
             ),
-            ACSmartButton(onPressed: () {}, text: 'Enviar')
+            ACSmartButton(
+                onPressed: () {
+                  if (_descricaoController.text.isNotEmpty) {
+                    atividadeProvider.salvar(
+                      arquivoPath: _anexo,
+                      dataSelecionada: _data,
+                      descricao: _descricaoController.text,
+                      statusSelecionado: atividadeProvider.statusSelecionado,
+                    );
+
+                    Navigator.pop(context);
+                  } else {
+                    // Exibir mensagem de erro
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Preencha todos os campos')));
+                  }
+                },
+                text: 'Enviar')
           ],
         ),
       ),
@@ -99,7 +129,7 @@ class EditarAtividade extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final atividade = consultarAtividade(id);
+    final atividade = context.watch<AtividadeProvider>().atividades[id];
 
     TextEditingController descricaoController =
         TextEditingController(text: atividade.descricao);

@@ -2,8 +2,10 @@ import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/activities.dart';
 import 'package:ac_smart/pages/dashboard.dart';
 import 'package:ac_smart/pages/reproved_activities.dart';
+import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -14,7 +16,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   late PageController pageController = PageController(initialPage: 0);
-
   int currentPage = 0;
   int currentSelectedNavigation = 0;
 
@@ -26,6 +27,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    List<Activity> atividades = context.watch<AtividadeProvider>().atividades;
+
     final destinationsList = [
       const NavigationDestination(
         icon: Icon(Icons.dashboard_outlined, color: Colors.white),
@@ -52,7 +55,19 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context.push('/activities/new');
+          // context.push('/activities/new');
+          Activity novaAtividade = Activity(
+            id: Provider.of<AtividadeProvider>(context, listen: false)
+                    .atividades
+                    .last
+                    .id +
+                1,
+            descricao: 'Teste inserção atividade',
+            horasSolicitadas: 4,
+            status: 'Aprovada',
+            dataAtividade: DateTime(2025, 04),
+          );
+          context.read<AtividadeProvider>().adicionarAtividade(novaAtividade);
         },
         icon: const Icon(
           Icons.note_add,

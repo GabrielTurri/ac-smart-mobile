@@ -1,6 +1,8 @@
 import 'package:ac_smart/models/activity.dart';
+import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class ActivityList extends StatelessWidget {
   const ActivityList({super.key, this.isReproved = false});
@@ -8,13 +10,15 @@ class ActivityList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Activity> atividades = context.watch<AtividadeProvider>().atividades;
+
     final listaAtividades = (isReproved)
         ? atividades.where((a) => a.status == "Reprovada").toList()
         : atividades.where((a) => a.status != "Reprovada").toList();
 
-    return Container(
-      height: 500,
-      width: 500,
+    return SizedBox(
+      height: 600,
+      width: double.infinity,
       child: ListView.builder(
         itemCount: listaAtividades.length,
         itemBuilder: (context, index) {

@@ -1,8 +1,15 @@
+import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/routes.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => AtividadeProvider(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {

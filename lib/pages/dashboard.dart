@@ -1,4 +1,3 @@
-import 'package:ac_smart/models/activity.dart';
 import 'package:ac_smart/pages/ui/app_bar.dart';
 import 'package:ac_smart/pages/ui/app_drawer.dart';
 import 'package:flutter/material.dart';
