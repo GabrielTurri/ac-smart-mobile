@@ -55,7 +55,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
-          context.push('/activities/new');
+          context.push('/new_activity');
         },
         icon: const Icon(
           Icons.note_add,

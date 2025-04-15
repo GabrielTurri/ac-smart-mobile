@@ -1,3 +1,4 @@
+import 'package:ac_smart/pages/view_model/vm_activities.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -36,8 +37,10 @@ void incluirAtividade({
     dataAtividade: dataAtividade,
     arquivoPath: arquivoPath,
   );
-  // atividades.add(novaAtividade);
+  AtividadeProvider().adicionarAtividade(novaAtividade);
+
   return debugPrint('Nova atividade cadastrada: \n$novaAtividade');
+
   // Retornar uma mensagem de sucesso
 }
 

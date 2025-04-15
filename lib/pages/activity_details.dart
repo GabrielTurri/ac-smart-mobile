@@ -92,24 +92,35 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                 ],
               ),
             ),
-            ACSmartButton(
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
                 onPressed: () {
                   if (_descricaoController.text.isNotEmpty) {
+                    _anexo = 'path';
+                    _data = DateTime.now();
+                    debugPrint('teste');
+
                     atividadeProvider.salvar(
                       arquivoPath: _anexo,
                       dataSelecionada: _data,
                       descricao: _descricaoController.text,
                       statusSelecionado: atividadeProvider.statusSelecionado,
                     );
-
-                    Navigator.pop(context);
                   } else {
                     // Exibir mensagem de erro
                     ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Preencha todos os campos')));
                   }
                 },
-                text: 'Enviar')
+                style: FilledButton.styleFrom(
+                    backgroundColor: Color(0xff043565),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8))),
+                child: Text('Enviar'),
+              ),
+            ),
           ],
         ),
       ),

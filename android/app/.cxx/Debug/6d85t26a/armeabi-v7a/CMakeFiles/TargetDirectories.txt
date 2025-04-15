@@ -1,0 +1,2 @@
+/home/turri/www/ac-smart-mobile/android/app/.cxx/Debug/6d85t26a/armeabi-v7a/CMakeFiles/edit_cache.dir
+/home/turri/www/ac-smart-mobile/android/app/.cxx/Debug/6d85t26a/armeabi-v7a/CMakeFiles/rebuild_cache.dir

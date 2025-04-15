@@ -25,11 +25,6 @@ class AtividadeProvider with ChangeNotifier {
 
   List<Activity> get atividades => _atividades;
 
-  void adicionarAtividade(Activity atividade) {
-    _atividades.add(atividade);
-    notifyListeners();
-  }
-
   Activity consultarAtividade(id) {
     return _atividades.firstWhere((a) => a.id == id);
   }
@@ -80,11 +75,18 @@ class AtividadeProvider with ChangeNotifier {
 //   }
 
   void salvar({descricao, statusSelecionado, dataSelecionada, arquivoPath}) {
-    incluirAtividade(
+    Activity novaAtividade = Activity(
       descricao: descricao,
       arquivoPath: arquivoPath,
       dataAtividade: dataSelecionada,
-      statusSelecionado: statusSelecionado,
+      status: statusSelecionado,
+      horasSolicitadas: 4,
     );
+    adicionarAtividade(novaAtividade);
+  }
+
+  void adicionarAtividade(Activity atividade) {
+    _atividades.add(atividade);
+    notifyListeners();
   }
 }

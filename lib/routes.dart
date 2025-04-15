@@ -29,11 +29,11 @@ class Routes {
                 return ActivityDetails(id: id);
               },
             ),
-            GoRoute(
-              path: 'new',
-              builder: (context, state) => const ActivityDetails(),
-            ),
           ]),
+      GoRoute(
+        path: '/new_activity',
+        builder: (context, state) => const ActivityDetails(),
+      ),
       GoRoute(
         path: '/login',
         builder: (context, state) => const ACSMartLogin(),
