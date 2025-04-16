@@ -74,13 +74,18 @@ class AtividadeProvider with ChangeNotifier {
 //     }
 //   }
 
-  void salvar({descricao, statusSelecionado, dataSelecionada, arquivoPath}) {
+  void salvar(
+      {descricao,
+      statusSelecionado,
+      dataSelecionada,
+      arquivoPath,
+      horasSolicitadas}) {
     Activity novaAtividade = Activity(
       descricao: descricao,
       arquivoPath: arquivoPath,
       dataAtividade: dataSelecionada,
       status: statusSelecionado,
-      horasSolicitadas: 4,
+      horasSolicitadas: horasSolicitadas,
     );
     adicionarAtividade(novaAtividade);
   }

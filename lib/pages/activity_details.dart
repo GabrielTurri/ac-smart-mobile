@@ -25,6 +25,7 @@ class InserirAtividade extends StatefulWidget {
 
 class _InserirAtividadeState extends State<InserirAtividade> {
   final _descricaoController = TextEditingController();
+  final _horasSolicitadasController = TextEditingController();
   String? _anexo;
   DateTime? _data;
 
@@ -56,6 +57,13 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                   Text(_anexo != null
                       ? 'Anexo: $_anexo'
                       : 'Nenhum anexo selecionado'),
+                  TextField(
+                    controller: _horasSolicitadasController,
+                    keyboardType: const TextInputType.numberWithOptions(),
+                    decoration: const InputDecoration(
+                        labelText: 'Horas Totais',
+                        border: OutlineInputBorder()),
+                  ),
                   CalendarioInput(DateTime.now()),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,7 +104,11 @@ class _InserirAtividadeState extends State<InserirAtividade> {
               width: double.infinity,
               child: FilledButton(
                 onPressed: () {
-                  if (_descricaoController.text.isNotEmpty) {
+                  int horasSolicitadas =
+                      int.tryParse(_horasSolicitadasController.text) ?? 0;
+
+                  if (_descricaoController.text.isNotEmpty &&
+                      horasSolicitadas != 0) {
                     _anexo = 'path';
                     _data = DateTime.now();
                     debugPrint('teste');
@@ -106,6 +118,7 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       dataSelecionada: _data,
                       descricao: _descricaoController.text,
                       statusSelecionado: atividadeProvider.statusSelecionado,
+                      horasSolicitadas: horasSolicitadas,
                     );
                   } else {
                     // Exibir mensagem de erro
@@ -143,10 +156,22 @@ class EditarAtividade extends StatelessWidget {
     TextEditingController descricaoController =
         TextEditingController(text: atividade.descricao);
     DateTime dataAtividade = atividade.dataAtividade;
-    TextEditingController horasSolicitadasController = TextEditingController();
+    TextEditingController horasSolicitadasController =
+        TextEditingController(text: atividade.horasSolicitadas.toString());
 
     return Scaffold(
-      appBar: const ACSmartAppBar(title: 'Editar Atividade'),
+      appBar: AppBar(
+        title: const Text(
+          'Visualizar Atividade',
+          style: TextStyle(color: Colors.white),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xff043565),
+        iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
