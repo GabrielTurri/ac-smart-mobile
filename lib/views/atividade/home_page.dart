@@ -1,8 +1,7 @@
 import 'package:ac_smart/models/activity.dart';
-import 'package:ac_smart/pages/activities.dart';
-import 'package:ac_smart/pages/dashboard.dart';
-import 'package:ac_smart/pages/reproved_activities.dart';
-import 'package:ac_smart/pages/view_model/vm_activities.dart';
+import 'package:ac_smart/views/atividade/atividades.dart';
+import 'package:ac_smart/views/atividade/dashboard.dart';
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -74,7 +73,7 @@ class _HomePageState extends State<HomePage> {
         children: const [
           Dashboard(),
           Activities(),
-          ReprovedActivities(),
+          Activities(isReproved: true),
         ],
       ),
       bottomNavigationBar: NavigationBarTheme(

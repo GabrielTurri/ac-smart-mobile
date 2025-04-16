@@ -1,7 +1,7 @@
-import 'package:ac_smart/pages/activities.dart';
-import 'package:ac_smart/pages/home_page.dart';
-import 'package:ac_smart/pages/login.dart';
-import 'package:ac_smart/pages/activity_details.dart';
+import 'package:ac_smart/views/atividade/atividades.dart';
+import 'package:ac_smart/views/atividade/home_page.dart';
+import 'package:ac_smart/views/login.dart';
+import 'package:ac_smart/views/atividade/activity_details.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {

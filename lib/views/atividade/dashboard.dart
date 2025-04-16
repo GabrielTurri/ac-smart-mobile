@@ -1,5 +1,5 @@
-import 'package:ac_smart/pages/ui/app_bar.dart';
-import 'package:ac_smart/pages/ui/app_drawer.dart';
+import 'package:ac_smart/views/atividade/ui/app_bar.dart';
+import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

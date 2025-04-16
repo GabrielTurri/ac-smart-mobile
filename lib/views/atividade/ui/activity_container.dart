@@ -1,5 +1,5 @@
 import 'package:ac_smart/models/activity.dart';
-import 'package:ac_smart/pages/view_model/vm_activities.dart';
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';

@@ -1,4 +1,4 @@
-import 'package:ac_smart/pages/view_model/vm_activities.dart';
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/routes.dart';
 import 'package:provider/provider.dart';

@@ -1,15 +1,16 @@
-import 'package:ac_smart/pages/ui/activity_container.dart';
-import 'package:ac_smart/pages/ui/app_bar.dart';
+import 'package:ac_smart/views/atividade/ui/activity_container.dart';
+import 'package:ac_smart/views/atividade/ui/app_bar.dart';
 import 'package:flutter/material.dart';
 
 class Activities extends StatelessWidget {
-  const Activities({super.key});
+  const Activities({super.key, this.isReproved = false});
+  final bool isReproved;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const ACSmartAppBar(
-        title: 'Atividades',
+      appBar: ACSmartAppBar(
+        title: (isReproved) ? 'Reprovadas' : 'Atividades',
       ),
       body: SingleChildScrollView(
         // height: MediaQuery.of(context).size.width * 0.80,
@@ -18,7 +19,7 @@ class Activities extends StatelessWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(8),
-              child: const ActivityList(),
+              child: ActivityList(isReproved: isReproved),
             ),
           ],
         ),

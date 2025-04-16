@@ -1,9 +1,8 @@
 // import 'package:ac_smart/models/activity.dart';
 
 import 'package:provider/provider.dart';
-import 'package:ac_smart/pages/ui/app_bar.dart';
-import 'package:ac_smart/pages/ui/button.dart';
-import 'package:ac_smart/pages/view_model/vm_activities.dart';
+import 'package:ac_smart/views/atividade/ui/app_bar.dart';
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
@@ -122,16 +121,16 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                     );
                   } else {
                     // Exibir mensagem de erro
-                    ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Preencha todos os campos')));
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Preencha todos os campos')));
                   }
                 },
                 style: FilledButton.styleFrom(
-                    backgroundColor: Color(0xff043565),
+                    backgroundColor: const Color(0xff043565),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8))),
-                child: Text('Enviar'),
+                child: const Text('Enviar'),
               ),
             ),
           ],
@@ -142,7 +141,7 @@ class _InserirAtividadeState extends State<InserirAtividade> {
 }
 
 class EditarAtividade extends StatelessWidget {
-  EditarAtividade({
+  const EditarAtividade({
     super.key,
     required this.id,
   });
