@@ -9,12 +9,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AtividadeProvider()),
-        ChangeNotifierProxyProvider<AtividadeProvider, HomepageProvider>(
-            create: (context) => HomepageProvider(
-                  atividadeProvider: AtividadeProvider(),
-                ),
-            update: (context, atividadeProvider, previous) =>
-                HomepageProvider(atividadeProvider: atividadeProvider))
+        ChangeNotifierProvider(create: (context) => HomepageProvider()),
       ],
       child: const MyApp(),
     ),
