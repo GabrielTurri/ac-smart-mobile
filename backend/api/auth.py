@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models.aluno import Aluno
-from models.coordenador import Coordenador
+from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity, get_jwt
+from models.user import User
 import hashlib
 
 auth_blueprint = Blueprint('auth', __name__)
@@ -9,12 +8,12 @@ auth_blueprint = Blueprint('auth', __name__)
 @auth_blueprint.route('/login', methods=['POST'])
 def login():
     """
-    Autentica um usuário (aluno ou coordenador)
+    Autentica um usuário (estudante ou coordenador)
     
     Request:
         - email: Email do usuário
         - senha: Senha do usuário
-        - tipo: Tipo de usuário (aluno ou coordenador)
+        - tipo: Tipo de usuário ('student' ou 'coordinator')
     
     Returns:
         - token: Token JWT para autenticação
@@ -29,42 +28,67 @@ def login():
     senha = data['senha']
     tipo = data['tipo'].lower()
     
+    # Mapear tipo para role no MongoDB
+    role_map = {
+        'aluno': 'student',
+        'coordenador': 'coordinator',
+        'student': 'student',
+        'coordinator': 'coordinator'
+    }
+    
+    if tipo not in role_map:
+        return jsonify({'erro': 'Tipo de usuário inválido'}), 400
+        
+    role = role_map[tipo]
+    
+    # Buscar usuário pelo email e role
+    user_model = User()
+    usuario = user_model.buscar_por_email(email, role)
+    
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 401
+    
     # Hash da senha para comparação
     senha_hash = hashlib.sha256(senha.encode()).hexdigest()
     
-    if tipo == 'aluno':
-        aluno = Aluno().buscar_por_email(email)
-        if not aluno or aluno.get('senha_aluno') != senha_hash:
-            return jsonify({'erro': 'Credenciais inválidas'}), 401
-        
-        # Criar token JWT
-        token = create_access_token(identity={'id': str(aluno['_id']), 'tipo': 'aluno'})
-        
-        # Remover a senha antes de retornar os dados do usuário
-        del aluno['senha_aluno']
-        
-        return jsonify({
-            'token': token,
-            'usuario': aluno
-        }), 200
-        
-    elif tipo == 'coordenador':
-        coordenador = Coordenador().buscar_por_email(email)
-        if not coordenador or coordenador.get('senha_coordenador') != senha_hash:
-            return jsonify({'erro': 'Credenciais inválidas'}), 401
-        
-        # Criar token JWT
-        token = create_access_token(identity={'id': str(coordenador['_id']), 'tipo': 'coordenador'})
-        
-        # Remover a senha antes de retornar os dados do usuário
-        del coordenador['senha_coordenador']
-        
-        return jsonify({
-            'token': token,
-            'usuario': coordenador
-        }), 200
+    # Verificar senha
+    if usuario.get('password') != senha_hash:
+        return jsonify({'erro': 'Senha incorreta'}), 401
     
-    return jsonify({'erro': 'Tipo de usuário inválido'}), 400
+    # Criar token JWT - usar string como identity e armazenar dados adicionais em claims extras
+    token = create_access_token(
+        identity=str(usuario['_id']),
+        additional_claims={'role': usuario['role']}
+    )
+    
+    # Remover a senha antes de retornar os dados do usuário
+    usuario_response = usuario.copy()
+    if 'password' in usuario_response:
+        del usuario_response['password']
+    
+    # Converter ObjectId para string para serialização JSON
+    usuario_response['_id'] = str(usuario_response['_id'])
+    
+    # Converter outros ObjectId que possam existir
+    if 'course' in usuario_response and 'course_id' in usuario_response['course']:
+        usuario_response['course']['course_id'] = str(usuario_response['course']['course_id'])
+        if 'coordinator' in usuario_response['course'] and 'coordinator_id' in usuario_response['course']['coordinator']:
+            usuario_response['course']['coordinator']['coordinator_id'] = str(usuario_response['course']['coordinator']['coordinator_id'])
+    
+    if 'coordinated_courses' in usuario_response:
+        for course in usuario_response['coordinated_courses']:
+            if 'course_id' in course:
+                course['course_id'] = str(course['course_id'])
+    
+    if 'activities' in usuario_response:
+        for activity in usuario_response['activities']:
+            if 'activity_id' in activity:
+                activity['activity_id'] = str(activity['activity_id'])
+    
+    return jsonify({
+        'token': token,
+        'usuario': usuario_response
+    }), 200
 
 @auth_blueprint.route('/verificar', methods=['GET'])
 @jwt_required()
@@ -75,12 +99,49 @@ def verificar_token():
     Returns:
         - mensagem: Mensagem de confirmação
         - usuario_id: ID do usuário autenticado
-        - tipo: Tipo de usuário (aluno ou coordenador)
+        - role: Papel do usuário ('student' ou 'coordinator')
     """
-    identidade = get_jwt_identity()
+    # O identity é agora o ID do usuário como string
+    usuario_id = get_jwt_identity()
+    
+    # Obter claims adicionais do token
+    claims = get_jwt()
+    role = claims.get('role')
+    
+    # Buscar informações atualizadas do usuário
+    user_model = User()
+    usuario = user_model.buscar_por_id(usuario_id)
+    
+    if not usuario:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+    
+    # Remover a senha antes de retornar os dados do usuário
+    usuario_response = usuario.copy()
+    if 'password' in usuario_response:
+        del usuario_response['password']
+    
+    # Converter ObjectId para string para serialização JSON
+    usuario_response['_id'] = str(usuario_response['_id'])
+    
+    # Converter outros ObjectId que possam existir
+    if 'course' in usuario_response and 'course_id' in usuario_response['course']:
+        usuario_response['course']['course_id'] = str(usuario_response['course']['course_id'])
+        if 'coordinator' in usuario_response['course'] and 'coordinator_id' in usuario_response['course']['coordinator']:
+            usuario_response['course']['coordinator']['coordinator_id'] = str(usuario_response['course']['coordinator']['coordinator_id'])
+    
+    if 'coordinated_courses' in usuario_response:
+        for course in usuario_response['coordinated_courses']:
+            if 'course_id' in course:
+                course['course_id'] = str(course['course_id'])
+    
+    if 'activities' in usuario_response:
+        for activity in usuario_response['activities']:
+            if 'activity_id' in activity:
+                activity['activity_id'] = str(activity['activity_id'])
     
     return jsonify({
         'mensagem': 'Token válido',
-        'usuario_id': identidade.get('id'),
-        'tipo': identidade.get('tipo')
+        'usuario_id': usuario_id,
+        'role': role,
+        'usuario': usuario_response
     }), 200
