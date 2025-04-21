@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from models.user import User
 from bson import ObjectId
 import hashlib
@@ -25,8 +25,10 @@ def list_students():
         - total_pages: Total de páginas
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem acessar esta funcionalidade'}), 403
     
     # Parâmetros de paginação
@@ -88,8 +90,10 @@ def get_student(student_id):
         - student: Dados do estudante
     """
     # Verificar se o usuário logado é coordenador ou o próprio estudante
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator' and identity.get('id') != student_id:
+    usuario_id = get_jwt_identity()  # ID do usuário como string
+    claims = get_jwt()
+    role = claims.get('role')
+    if role != 'coordinator' and usuario_id != student_id:
         return jsonify({'error': 'Permissão negada'}), 403
     
     # Buscar estudante
@@ -137,8 +141,10 @@ def create_student():
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem criar estudantes'}), 403
     
     data = request.get_json()
@@ -205,8 +211,10 @@ def update_student(student_id):
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador ou o próprio estudante
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator' and identity.get('id') != student_id:
+    usuario_id = get_jwt_identity()  # ID do usuário como string
+    claims = get_jwt()
+    role = claims.get('role')
+    if role != 'coordinator' and usuario_id != student_id:
         return jsonify({'error': 'Permissão negada'}), 403
     
     data = request.get_json()
@@ -272,8 +280,10 @@ def delete_student(student_id):
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem remover estudantes'}), 403
     
     # Verificar se o estudante existe

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from models.user import User
 from bson import ObjectId
 import hashlib
@@ -24,8 +24,10 @@ def list_coordinators():
         - total_pages: Total de páginas
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem acessar esta funcionalidade'}), 403
     
     # Parâmetros de paginação
@@ -81,8 +83,10 @@ def get_coordinator(coordinator_id):
         - coordinator: Dados do coordenador
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem acessar esta funcionalidade'}), 403
     
     # Buscar coordenador
@@ -126,8 +130,10 @@ def create_coordinator():
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem criar outros coordenadores'}), 403
     
     data = request.get_json()
@@ -149,7 +155,7 @@ def create_coordinator():
         'name': data['name'],
         'surname': data['surname'],
         'email': data['email'],
-        'password': data['password'],  # Em produção, deve-se fazer hash da senha
+        'password': generate_password_hash(data['password']),  # Faz hash da senha
         'role': 'coordinator',
         'coordinated_courses': []
     }
@@ -184,8 +190,10 @@ def update_coordinator(coordinator_id):
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator':
+    # O identity agora é apenas o ID do usuário como string
+    # O role está nos claims adicionais
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator':
         return jsonify({'error': 'Permissão negada. Apenas coordenadores podem atualizar coordenadores'}), 403
     
     data = request.get_json()
