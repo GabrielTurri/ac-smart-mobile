@@ -7,7 +7,7 @@ class Curso:
     """
     def __init__(self):
         self.db = get_db_connection()
-        self.collection = self.db.cursos
+        self.collection = self.db.courses
 
     def criar(self, dados_curso):
         """
@@ -77,7 +77,7 @@ class Curso:
             dict: Dados do curso encontrado
         """
         try:
-            return self.collection.find_one({"nome_curso": nome})
+            return self.collection.find_one({"name": nome})
         except Exception as e:
             print(f"Erro ao buscar curso por nome: {e}")
             return None
@@ -93,7 +93,11 @@ class Curso:
             list: Lista de cursos encontrados
         """
         try:
-            cursos = self.collection.find({"coordenador_id": coordenador_id})
+            # Converter para ObjectId se for uma string
+            if isinstance(coordenador_id, str):
+                coordenador_id = ObjectId(coordenador_id)
+                
+            cursos = self.collection.find({"coordinator.coordinator_id": coordenador_id})
             return list(cursos)
         except Exception as e:
             print(f"Erro ao buscar cursos por coordenador: {e}")

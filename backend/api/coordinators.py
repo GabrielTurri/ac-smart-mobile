@@ -155,7 +155,7 @@ def create_coordinator():
         'name': data['name'],
         'surname': data['surname'],
         'email': data['email'],
-        'password': generate_password_hash(data['password']),  # Faz hash da senha
+        'password': hashlib.sha256(data['password'].encode()).hexdigest(),  # Faz hash da senha
         'role': 'coordinator',
         'coordinated_courses': []
     }
@@ -252,8 +252,8 @@ def delete_coordinator(coordinator_id):
         - message: Mensagem de sucesso
     """
     # Verificar se o usuário logado é coordenador
-    identity = get_jwt_identity()
-    if identity.get('role') != 'coordinator' or identity.get('id') == coordinator_id:
+    claims = get_jwt()
+    if claims.get('role') != 'coordinator' or claims.get('id') == coordinator_id:
         return jsonify({'error': 'Permissão negada. Apenas outros coordenadores podem remover um coordenador'}), 403
     
     # Verificar se o coordenador existe
