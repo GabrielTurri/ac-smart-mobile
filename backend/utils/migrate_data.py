@@ -1,305 +1,218 @@
-"""
-MySQL to MongoDB Migration Script for Humanitae Database
-
-This script migrates data from a MySQL database to MongoDB following a document-oriented
-approach, transforming relational tables into document collections.
-
-Requirements:
-- mysql-connector-python
-- pymongo
-- python-dotenv (optional, for loading environment variables)
-
-Usage:
-1. Configure the database connections in the script or through environment variables
-2. Run the script: python migrate_to_mongodb.py
-"""
-
 import mysql.connector
-from mysql.connector import Error
+from bson import ObjectId
 from pymongo import MongoClient
-from datetime import datetime
-import logging
-import os
-from dotenv import load_dotenv  # Optional
+import datetime
 
-# Load environment variables if .env file exists
-try:
-    load_dotenv()
-except ImportError:
-    pass
+MONGO_URI = "mongodb+srv://ac-user:DhSiEeAvv91BYcl3@cluster1.mfkyhze.mongodb.net/?appName=Cluster1"
+MONGO_DB = "ac_smart_db"
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler("migration.log"),
-        logging.StreamHandler()
-    ]
+# Connect to MySQL
+mysql_conn = mysql.connector.connect(
+    host="192.168.1.40",
+    user="root",
+    password="my-secret-pw",
+    database="humanitae_db"
 )
-logger = logging.getLogger()
+cursor = mysql_conn.cursor(dictionary=True)
 
-# Database configuration
-# You can set these as environment variables or hardcode for testing
-MYSQL_CONFIG = {
-    'host': os.getenv('MYSQL_HOST', 'localhost'),
-    'database': os.getenv('MYSQL_DB', 'humanitae_db'),
-    'user': os.getenv('MYSQL_USER', 'root'),
-    'password': os.getenv('MYSQL_PASSWORD', ''),
-}
+# Connect to MongoDB
+mongo_client = MongoClient(MONGO_URI)
+mongo_db = mongo_client[MONGO_DB]
 
-MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/')
-MONGO_DB = os.getenv('MONGO_DB', 'ac_smart_db')
+# Clear existing data (if needed)
+mongo_db.users.drop()
+mongo_db.courses.drop()
 
-def connect_mysql():
-    """Connect to MySQL database"""
-    try:
-        connection = mysql.connector.connect(**MYSQL_CONFIG)
-        if connection.is_connected():
-            logger.info(f"Connected to MySQL database: {MYSQL_CONFIG['database']}")
-            return connection
-    except Error as e:
-        logger.error(f"Error connecting to MySQL: {e}")
-        return None
+# Step 1: Migrate Coordinators and create ID mapping
+coordinator_id_map = {}  # MySQL ID -> MongoDB ID
+coordinators = []
 
-def connect_mongodb():
-    """Connect to MongoDB"""
-    try:
-        client = MongoClient(MONGO_URI)
-        db = client[MONGO_DB]
-        logger.info(f"Connected to MongoDB: {MONGO_DB}")
-        return db
-    except Exception as e:
-        logger.error(f"Error connecting to MongoDB: {e}")
-        return None
-
-def clean_mongodb(db):
-    """Clean existing collections in MongoDB before migration"""
-    try:
-        collections = ['users', 'courses', 'activities']
-        for collection in collections:
-            if collection in db.list_collection_names():
-                db[collection].drop()
-                logger.info(f"Dropped collection: {collection}")
-    except Exception as e:
-        logger.error(f"Error cleaning MongoDB: {e}")
-
-def migrate_coordenadores(mysql_conn, mongo_db):
-    """Migrate coordinators from MySQL to MongoDB"""
-    try:
-        cursor = mysql_conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM coordenador")
-        coordinators = cursor.fetchall()
-        
-        users_collection = mongo_db.users
-        
-        for coordinator in coordinators:
-            # Create new coordinator document
-            coordinator_doc = {
-                "role": "coordenador",
-                "codigo": str(coordinator['cod_coordenador']),
-                "nome": coordinator['nome_coordenador'],
-                "sobrenome": coordinator['sobrenome_coordenador'],
-                "email": coordinator['email_coordenador'],
-                "senha": coordinator['senha_coordenador'],
-                "cursos_coordenados": []  # Will be populated when migrating courses
-            }
-            
-            # Insert into MongoDB
-            result = users_collection.insert_one(coordinator_doc)
-            logger.info(f"Inserted coordinator: {coordinator['nome_coordenador']} with ID: {result.inserted_id}")
-        
-        logger.info(f"Migrated {len(coordinators)} coordinators")
-    except Exception as e:
-        logger.error(f"Error migrating coordinators: {e}")
-
-def migrate_alunos(mysql_conn, mongo_db):
-    """Migrate students from MySQL to MongoDB"""
-    try:
-        cursor = mysql_conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM aluno")
-        students = cursor.fetchall()
-        
-        users_collection = mongo_db.users
-        
-        for student in students:
-            # Create new student document
-            student_doc = {
-                "role": "aluno",
-                "codigo": str(student['RA_aluno']),
-                "nome": student['nome_aluno'],
-                "sobrenome": student['sobrenome_aluno'],
-                "email": student['email_aluno'],
-                "senha": student['senha_aluno'],
-                "curso_id": str(student['cod_curso'])
-            }
-            
-            # Insert into MongoDB
-            result = users_collection.insert_one(student_doc)
-            logger.info(f"Inserted student: {student['nome_aluno']} with ID: {result.inserted_id}")
-        
-        logger.info(f"Migrated {len(students)} students")
-    except Exception as e:
-        logger.error(f"Error migrating students: {e}")
-
-def migrate_cursos_disciplinas(mysql_conn, mongo_db):
-    """Migrate courses and disciplines from MySQL to MongoDB"""
-    try:
-        cursor = mysql_conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM curso")
-        courses = cursor.fetchall()
-        
-        courses_collection = mongo_db.courses
-        users_collection = mongo_db.users
-        
-        for course in courses:
-            # Get disciplines for this course
-            cursor.execute("SELECT * FROM disciplina WHERE cod_curso = %s", (course['cod_curso'],))
-            disciplines = cursor.fetchall()
-            
-            # Format disciplines as embedded documents
-            disciplines_docs = []
-            for discipline in disciplines:
-                disciplines_docs.append({
-                    "nome": discipline['nome'],
-                    "descricao": discipline['descricao']
-                })
-            
-            # Create course document
-            course_doc = {
-                "_id": str(course['cod_curso']),
-                "nome": course['nome_curso'],
-                "horas_complementares": course['horas_complementares'],
-                "coordenador_id": str(course['coordenador_curso']),
-                "disciplinas": disciplines_docs
-            }
-            
-            # Insert into MongoDB
-            result = courses_collection.insert_one(course_doc)
-            logger.info(f"Inserted course: {course['nome_curso']} with ID: {result.inserted_id}")
-            
-            # Update coordinator's cursos_coordenados array
-            users_collection.update_one(
-                {"role": "coordenador", "codigo": str(course['coordenador_curso'])},
-                {"$push": {"cursos_coordenados": str(course['cod_curso'])}}
-            )
-        
-        logger.info(f"Migrated {len(courses)} courses with their disciplines")
-    except Exception as e:
-        logger.error(f"Error migrating courses and disciplines: {e}")
-
-def migrate_atividades_observacoes(mysql_conn, mongo_db):
-    """Migrate activities and observations from MySQL to MongoDB"""
-    try:
-        cursor = mysql_conn.cursor(dictionary=True)
-        cursor.execute("SELECT * FROM atividade_complementar")
-        activities = cursor.fetchall()
-        
-        activities_collection = mongo_db.activities
-        
-        for activity in activities:
-            # Get observations for this activity
-            cursor.execute("SELECT * FROM observacao_atividade WHERE cod_atividade = %s", (activity['cod_atividade'],))
-            observations = cursor.fetchall()
-            
-            # Format observations as embedded documents
-            observations_docs = []
-            for observation in observations:
-                observations_docs.append({
-                    "observacao": observation['observacao'],
-                    "created_at": observation.get('observacao_atividade_timestamp') or datetime.now()
-                })
-            
-            # Create activity document
-            activity_doc = {
-                "_id": str(activity['cod_atividade']),
-                "aluno_id": str(activity['RA_aluno']),
-                "titulo": activity['titulo'],
-                "descricao": activity['descricao'],
-                "caminho_anexo": activity['caminho_anexo'],
-                "horas_solicitadas": activity['horas_solicitadas'],
-                "horas_aprovadas": activity['horas_aprovadas'],
-                "data": activity['data'],
-                "status": activity['status'],
-                "created_at": activity.get('atividade_complementar_timestamp') or datetime.now(),
-                "observacoes": observations_docs
-            }
-            
-            # Insert into MongoDB
-            result = activities_collection.insert_one(activity_doc)
-            logger.info(f"Inserted activity: {activity['titulo']} with ID: {result.inserted_id}")
-        
-        logger.info(f"Migrated {len(activities)} activities with their observations")
-    except Exception as e:
-        logger.error(f"Error migrating activities and observations: {e}")
-
-def create_indexes(mongo_db):
-    """Create indexes for better query performance"""
-    try:
-        # Indexes for users collection
-        mongo_db.users.create_index("codigo")
-        mongo_db.users.create_index("email")
-        mongo_db.users.create_index("role")
-        
-        # Indexes for activities collection
-        mongo_db.activities.create_index("aluno_id")
-        mongo_db.activities.create_index("status")
-        
-        logger.info("Created indexes for better query performance")
-    except Exception as e:
-        logger.error(f"Error creating indexes: {e}")
-
-def migration_complete(mongo_db):
-    """Log some stats after migration is complete"""
-    try:
-        users_count = mongo_db.users.count_documents({})
-        coordinator_count = mongo_db.users.count_documents({"role": "coordenador"})
-        student_count = mongo_db.users.count_documents({"role": "aluno"})
-        courses_count = mongo_db.courses.count_documents({})
-        activities_count = mongo_db.activities.count_documents({})
-        
-        logger.info("Migration complete!")
-        logger.info(f"Total users: {users_count} (Coordinators: {coordinator_count}, Students: {student_count})")
-        logger.info(f"Total courses: {courses_count}")
-        logger.info(f"Total activities: {activities_count}")
-    except Exception as e:
-        logger.error(f"Error generating migration stats: {e}")
-
-def main():
-    """Main migration function"""
-    logger.info("Starting migration from MySQL to MongoDB")
+cursor.execute("SELECT * FROM coordenador")
+for coord in cursor.fetchall():
+    mongo_id = ObjectId()
+    coordinator_id_map[coord['cod_coordenador']] = mongo_id
     
-    # Connect to databases
-    mysql_conn = connect_mysql()
-    mongo_db = connect_mongodb()
-    
-    if not mysql_conn or not mongo_db:
-        logger.error("Failed to connect to one or both databases. Exiting.")
-        return
-    
-    try:
-        # Clean MongoDB collections before migration
-        clean_mongodb(mongo_db)
-        
-        # Migrate data
-        migrate_coordenadores(mysql_conn, mongo_db)
-        migrate_alunos(mysql_conn, mongo_db)
-        migrate_cursos_disciplinas(mysql_conn, mongo_db)
-        migrate_atividades_observacoes(mysql_conn, mongo_db)
-        
-        # Create indexes for better query performance
-        create_indexes(mongo_db)
-        
-        # Log migration stats
-        migration_complete(mongo_db)
-        
-    except Exception as e:
-        logger.error(f"Migration failed: {e}")
-    finally:
-        # Close MySQL connection
-        if mysql_conn and mysql_conn.is_connected():
-            mysql_conn.close()
-            logger.info("MySQL connection closed")
+    coordinators.append({
+        "_id": mongo_id,
+        "name": coord['nome_coordenador'],
+        "surname": coord['sobrenome_coordenador'],
+        "email": coord['email_coordenador'],
+        "password": coord['senha_coordenador'],  # In production, rehash this
+        "role": "coordinator",
+        "coordinated_courses": []
+    })
 
-if __name__ == "__main__":
-    main()
+# Step 2: Migrate Courses with their disciplines
+course_id_map = {}  # MySQL ID -> MongoDB ID
+courses = []
+
+cursor.execute("""
+    SELECT c.*, co.nome_coordenador, co.sobrenome_coordenador, co.email_coordenador 
+    FROM curso c
+    JOIN coordenador co ON c.coordenador_curso = co.cod_coordenador
+""")
+
+for course in cursor.fetchall():
+    mongo_id = ObjectId()
+    course_id_map[course['cod_curso']] = mongo_id
+    
+    # Get disciplines for this course
+    cursor2 = mysql_conn.cursor(dictionary=True)
+    cursor2.execute("SELECT * FROM disciplina WHERE cod_curso = %s", (course['cod_curso'],))
+    disciplines = []
+    
+    for disc in cursor2.fetchall():
+        disciplines.append({
+            "name": disc['nome'],
+            "description": disc['descricao']
+        })
+    
+    # Create course document
+    course_doc = {
+        "_id": mongo_id,
+        "name": course['nome_curso'],
+        "required_hours": course['horas_complementares'],
+        "coordinator": {
+            "coordinator_id": coordinator_id_map[course['coordenador_curso']],
+            "name": course['nome_coordenador'],
+            "surname": course['sobrenome_coordenador'],
+            "email": course['email_coordenador']
+        },
+        "disciplines": disciplines,
+        "student_count": 0,
+        "pending_activities": []
+    }
+    
+    courses.append(course_doc)
+    
+    # Update the coordinator's courses list
+    for coord in coordinators:
+        if coord["_id"] == coordinator_id_map[course['coordenador_curso']]:
+            coord["coordinated_courses"].append({
+                "course_id": mongo_id,
+                "name": course['nome_curso'],
+                "required_hours": course['horas_complementares']
+            })
+
+# Step 3: Migrate Students with their activities
+students = []
+
+cursor.execute("""
+    SELECT a.*, c.nome_curso, c.horas_complementares, 
+           co.cod_coordenador, co.nome_coordenador, co.sobrenome_coordenador, co.email_coordenador 
+    FROM aluno a
+    JOIN curso c ON a.cod_curso = c.cod_curso
+    JOIN coordenador co ON c.coordenador_curso = co.cod_coordenador
+""")
+
+for student in cursor.fetchall():
+    # Get all activities for this student
+    cursor2 = mysql_conn.cursor(dictionary=True)
+    cursor2.execute("""
+        SELECT ac.*, obs.observacao, obs.observacao_atividade_timestamp 
+        FROM atividade_complementar ac
+        LEFT JOIN observacao_atividade obs ON ac.cod_atividade = obs.cod_atividade
+        WHERE ac.RA_aluno = %s
+    """, (student['RA_aluno'],))
+    
+    activities = []
+    total_approved = 0
+    total_pending = 0
+    total_rejected = 0
+    
+    for activity in cursor2.fetchall():
+        activity_id = ObjectId()
+        
+        # Process observations
+        observations = []
+        if activity['observacao']:
+            observations.append({
+                "text": activity['observacao'],
+                "created_at": activity['observacao_atividade_timestamp'],
+                "coordinator_name": f"{student['nome_coordenador']} {student['sobrenome_coordenador']}"
+            })
+        
+        act_doc = {
+            "activity_id": activity_id,
+            "title": activity['titulo'],
+            "description": activity['descricao'],
+            "attachment_path": activity['caminho_anexo'],
+            "requested_hours": activity['horas_solicitadas'],
+            "completion_date": datetime.datetime.combine(activity['data'], datetime.time.min) if isinstance(activity['data'], datetime.date) else activity['data'],
+            "status": activity['status'],
+            "approved_hours": activity['horas_aprovadas'],
+            "created_at": activity['atividade_complementar_timestamp'],
+            "observations": observations
+        }
+        
+        activities.append(act_doc)
+        
+        # Track hours by status
+        if activity['status'] == 'Approved':
+            total_approved += activity['horas_aprovadas']
+        elif activity['status'] == 'Pending':
+            total_pending += activity['horas_solicitadas']
+            
+            # Add to pending activities in course
+            for course in courses:
+                if course["_id"] == course_id_map[student['cod_curso']]:
+                    course["pending_activities"].append({
+                        "activity_id": activity_id,
+                        "student_id": ObjectId(),  # Will be replaced after student creation
+                        "student_name": f"{student['nome_aluno']} {student['sobrenome_aluno']}",
+                        "student_RA": student['RA_aluno'],
+                        "title": activity['titulo'],
+                        "requested_hours": activity['horas_solicitadas'],
+                        "created_at": activity['atividade_complementar_timestamp']
+                    })
+        elif activity['status'] == 'Reprovado':  # Assuming 'Reprovado' is 'Rejected' in Portuguese
+            total_rejected += activity['horas_solicitadas']
+    
+    # Create student document
+    student_doc = {
+        "_id": ObjectId(),
+        "name": student['nome_aluno'],
+        "surname": student['sobrenome_aluno'],
+        "email": student['email_aluno'],
+        "password": student['senha_aluno'],  # In production, rehash this
+        "role": "student",
+        "RA": student['RA_aluno'],
+        "course": {
+            "course_id": course_id_map[student['cod_curso']],
+            "name": student['nome_curso'],
+            "required_hours": student['horas_complementares'],
+            "coordinator": {
+                "coordinator_id": coordinator_id_map[student['cod_coordenador']],
+                "name": student['nome_coordenador'],
+                "surname": student['sobrenome_coordenador'],
+                "email": student['email_coordenador']
+            }
+        },
+        "activities": activities,
+        "total_approved_hours": total_approved,
+        "total_pending_hours": total_pending,
+        "total_rejected_hours": total_rejected
+    }
+    
+    students.append(student_doc)
+    
+    # Update student count in course
+    for course in courses:
+        if course["_id"] == course_id_map[student['cod_curso']]:
+            course["student_count"] += 1
+    
+    # Update student_id in pending activities
+    for course in courses:
+        for pending in course.get("pending_activities", []):
+            if pending.get("student_RA") == student['RA_aluno']:
+                pending["student_id"] = student_doc["_id"]
+
+# Insert all data into MongoDB
+if coordinators:
+    mongo_db.users.insert_many(coordinators)
+if courses:
+    mongo_db.courses.insert_many(courses)
+if students:
+    mongo_db.users.insert_many(students)
+
+print(f"Migration complete! Migrated {len(coordinators)} coordinators, {len(courses)} courses, and {len(students)} students.")
