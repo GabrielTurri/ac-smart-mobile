@@ -1,0 +1,34 @@
+meta {
+  name: Coordinator Login
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/auth/login
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "email": "joao.silva@humanitae.br",
+    "senha": "abcd=1234",
+    "tipo": "coordenador"
+  }
+}
+
+script:post-response {
+  // Store the token for subsequent requests
+  if (res.status === 200) {
+    const data = res.body;
+    if (data.token) {
+      bru.setEnvVar("token", data.token);
+      bru.setEnvVar("coordinatorId", data.usuario._id);
+    }
+  }
+}

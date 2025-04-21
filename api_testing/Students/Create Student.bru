@@ -1,0 +1,27 @@
+meta {
+  name: Create Student
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/students
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "Test",
+    "surname": "Student",
+    "email": "test.student@example.com",
+    "password": "password123",
+    "RA": "123456",
+    "course_id": "{{courseId}}"
+  }
+}

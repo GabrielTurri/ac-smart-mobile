@@ -1,11 +1,11 @@
 meta {
-  name: Verificar Token
+  name: Delete Coordinator
   type: http
-  seq: 3
+  seq: 5
 }
 
-get {
-  url: {{baseUrl}}/api/auth/verificar
+delete {
+  url: {{baseUrl}}/api/coordinators/{{coordinatorId}}
   body: none
   auth: inherit
 }

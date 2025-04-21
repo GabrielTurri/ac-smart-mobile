@@ -1,0 +1,27 @@
+meta {
+  name: List Courses
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/cursos
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+query {
+  pagina: 1
+  limite: 10
+}
+
+script:post-response {
+  // Store the first course ID for subsequent requests
+  if (res.status === 200 && res.body.cursos && res.body.cursos.length > 0) {
+    bru.setEnvVar("courseId", res.body.cursos[0]._id);
+  }
+}

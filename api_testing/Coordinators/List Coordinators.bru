@@ -1,0 +1,20 @@
+meta {
+  name: List Coordinators
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/coordinators
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+query {
+  page: 1
+  limit: 10
+}
