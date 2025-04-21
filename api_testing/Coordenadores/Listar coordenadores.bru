@@ -1,0 +1,15 @@
+meta {
+  name: Listar coordenadores
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/coordinators
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
