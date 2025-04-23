@@ -1,4 +1,4 @@
-import 'package:ac_smart/models/activity.dart';
+import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
 import 'package:flutter/material.dart';
 

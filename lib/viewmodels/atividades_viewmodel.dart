@@ -1,4 +1,4 @@
-import 'package:ac_smart/models/activity.dart';
+import 'package:ac_smart/models/activity_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
@@ -93,5 +93,20 @@ class AtividadeProvider with ChangeNotifier {
   void adicionarAtividade(Activity atividade) {
     _atividades.add(atividade);
     notifyListeners();
+  }
+
+  void alterarAtividade(descricao, statusSelecionado, dataSelecionada,
+      arquivoPath, horasSolicitadas,
+      {required id}) {
+    int index = atividades.indexWhere((a) => a.id == id);
+    if (index >= 0) {
+      atividades[index] = Activity(
+        descricao: descricao,
+        dataAtividade: dataSelecionada,
+        arquivoPath: arquivoPath,
+        status: statusSelecionado,
+        horasSolicitadas: horasSolicitadas,
+      );
+    }
   }
 }

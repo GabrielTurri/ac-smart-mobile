@@ -47,3 +47,21 @@ void incluirAtividade({
 Activity consultarAtividade(index) {
   return consultarAtividade(index);
 }
+
+void alterarAtividade({
+  required id,
+  required descricao,
+  required statusSelecionado,
+  required dataAtividade,
+  required arquivoPath,
+}) {
+  Activity novaAtividade = Activity(
+    descricao: descricao,
+    status: statusSelecionado,
+    dataAtividade: dataAtividade,
+    arquivoPath: arquivoPath,
+  );
+  AtividadeProvider().adicionarAtividade(novaAtividade);
+
+  return debugPrint('Nova atividade cadastrada: \n$novaAtividade');
+}

@@ -1,5 +1,6 @@
 // import 'package:ac_smart/models/activity.dart';
 
+import 'package:ac_smart/widgets/activity_menu.dart';
 import 'package:provider/provider.dart';
 import 'package:ac_smart/views/atividade/ui/app_bar.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
@@ -167,9 +168,10 @@ class EditarAtividade extends StatelessWidget {
         centerTitle: true,
         backgroundColor: const Color(0xff043565),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
-        ],
+        actions: <Widget>[ActivityMenu()],
+        // [
+        //   IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+        // ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
