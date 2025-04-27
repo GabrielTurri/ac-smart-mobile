@@ -75,7 +75,7 @@ class ActivityTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            atividade.descricao,
+            atividade.titulo,
             style: const TextStyle(fontSize: 16),
           ),
           Text('${atividade.horasSolicitadas}H'),
@@ -106,7 +106,7 @@ class ReprovedActivityTile extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
-            atividade.descricao,
+            atividade.titulo,
             style: const TextStyle(fontSize: 16),
           ),
           Text(

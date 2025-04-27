@@ -25,6 +25,7 @@ class InserirAtividade extends StatefulWidget {
 
 class _InserirAtividadeState extends State<InserirAtividade> {
   final _descricaoController = TextEditingController();
+  final _tituloController = TextEditingController();
   final _horasSolicitadasController = TextEditingController();
   String? _anexo;
   DateTime? _data;
@@ -45,6 +46,11 @@ class _InserirAtividadeState extends State<InserirAtividade> {
               child: Column(
                 spacing: 16,
                 children: [
+                  TextField(
+                    controller: _tituloController,
+                    decoration: const InputDecoration(
+                        labelText: 'Título', border: OutlineInputBorder()),
+                  ),
                   TextField(
                     controller: _descricaoController,
                     decoration: const InputDecoration(
@@ -153,6 +159,8 @@ class EditarAtividade extends StatelessWidget {
   Widget build(BuildContext context) {
     final atividade = context.read<AtividadeProvider>().consultarAtividade(id);
 
+    TextEditingController tituloController =
+        TextEditingController(text: atividade.titulo);
     TextEditingController descricaoController =
         TextEditingController(text: atividade.descricao);
     DateTime dataAtividade = atividade.dataAtividade;
@@ -168,7 +176,7 @@ class EditarAtividade extends StatelessWidget {
         centerTitle: true,
         backgroundColor: const Color(0xff043565),
         iconTheme: const IconThemeData(color: Colors.white),
-        actions: <Widget>[ActivityMenu()],
+        actions: const <Widget>[ActivityMenu()],
         // [
         //   IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
         // ],
@@ -179,8 +187,13 @@ class EditarAtividade extends StatelessWidget {
           spacing: 8,
           children: [
             Text(
-              'Consultando: ${atividade.descricao}',
+              'Consultando: ${atividade.titulo}',
               style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            TextField(
+              controller: tituloController,
+              decoration: const InputDecoration(
+                  labelText: 'Descrição', border: OutlineInputBorder()),
             ),
             TextField(
               controller: descricaoController,

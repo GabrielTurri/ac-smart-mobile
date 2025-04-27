@@ -6,17 +6,17 @@ class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
   List<Activity> _atividades = [
     Activity(
-        descricao: 'Palestra Python',
+        titulo: 'Palestra Python',
         horasSolicitadas: 4,
         dataAtividade: DateTime(2025, 04)),
     Activity(
-      descricao: 'Palestra Machine Learning',
+      titulo: 'Palestra Machine Learning',
       horasSolicitadas: 8,
       status: 'Reprovada',
       dataAtividade: DateTime(2025, 04),
     ),
     Activity(
-      descricao: 'Certificado: HTML Básico',
+      titulo: 'Certificado: HTML Básico',
       horasSolicitadas: 4,
       status: 'Aprovada',
       dataAtividade: DateTime(2025, 04),
@@ -81,7 +81,7 @@ class AtividadeProvider with ChangeNotifier {
       arquivoPath,
       horasSolicitadas}) {
     Activity novaAtividade = Activity(
-      descricao: descricao,
+      titulo: descricao,
       arquivoPath: arquivoPath,
       dataAtividade: dataSelecionada,
       status: statusSelecionado,
@@ -101,7 +101,7 @@ class AtividadeProvider with ChangeNotifier {
     int index = atividades.indexWhere((a) => a.id == id);
     if (index >= 0) {
       atividades[index] = Activity(
-        descricao: descricao,
+        titulo: descricao,
         dataAtividade: dataSelecionada,
         arquivoPath: arquivoPath,
         status: statusSelecionado,

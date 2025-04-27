@@ -7,6 +7,7 @@ var uuid = const Uuid();
 class Activity {
   final String id = uuid.v4();
   final int raAluno = 123456;
+  final String titulo;
   final String descricao;
   final String arquivoPath;
   final int horasSolicitadas;
@@ -17,7 +18,8 @@ class Activity {
 
   int pageIndex = 0;
   Activity({
-    this.descricao = 'Certificado: HTML Básico',
+    this.titulo = 'Certificado: HTML Básico',
+    this.descricao = 'Certificado de curso online de HTML Básico',
     this.arquivoPath = 'teste.png',
     required this.dataAtividade,
     this.horasSolicitadas = 4,
@@ -32,7 +34,7 @@ void incluirAtividade({
   required arquivoPath,
 }) {
   Activity novaAtividade = Activity(
-    descricao: descricao,
+    titulo: descricao,
     status: statusSelecionado,
     dataAtividade: dataAtividade,
     arquivoPath: arquivoPath,
@@ -56,7 +58,7 @@ void alterarAtividade({
   required arquivoPath,
 }) {
   Activity novaAtividade = Activity(
-    descricao: descricao,
+    titulo: descricao,
     status: statusSelecionado,
     dataAtividade: dataAtividade,
     arquivoPath: arquivoPath,
