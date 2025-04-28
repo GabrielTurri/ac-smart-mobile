@@ -17,6 +17,7 @@ class Activity {
   final String status;
 
   int pageIndex = 0;
+
   Activity({
     this.titulo = 'Certificado: HTML Básico',
     this.descricao = 'Certificado de curso online de HTML Básico',
