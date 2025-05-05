@@ -95,18 +95,45 @@ class AtividadeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void alterarAtividade(descricao, statusSelecionado, dataSelecionada,
-      arquivoPath, horasSolicitadas,
-      {required id}) {
-    int index = atividades.indexWhere((a) => a.id == id);
-    if (index >= 0) {
-      atividades[index] = Activity(
-        titulo: descricao,
-        dataAtividade: dataSelecionada,
-        arquivoPath: arquivoPath,
-        status: statusSelecionado,
-        horasSolicitadas: horasSolicitadas,
-      );
+  Future<void> atualizar() {
+    notifyListeners();
+    return Future.delayed(const Duration(seconds: 3));
+  }
+
+  void alterarAtividade({
+    required id,
+    descricao,
+    statusSelecionado,
+    dataSelecionada,
+    arquivoPath,
+    horasSolicitadas,
+  }) {
+    // int index = atividades.indexWhere((a) => a.id == id);
+    // if (index >= 0) {
+    //   atividades[index] = Activity(
+    //     titulo: descricao,
+    //     dataAtividade: dataSelecionada,
+    //     arquivoPath: arquivoPath,
+    //     status: statusSelecionado,
+    //     horasSolicitadas: horasSolicitadas,
+    //   );
+    // }
+    Activity atividade = atividades.firstWhere((a) => a.id == id);
+
+    if (descricao != null) {
+      atividade.descricao = descricao;
+    }
+    if (statusSelecionado != null) {
+      atividade.status = statusSelecionado;
+    }
+    if (dataSelecionada != null) {
+      atividade.dataAtividade = dataSelecionada;
+    }
+    if (arquivoPath != null) {
+      atividade.arquivoPath = arquivoPath;
+    }
+    if (horasSolicitadas != null) {
+      atividade.horasSolicitadas = horasSolicitadas;
     }
   }
 }

@@ -7,14 +7,14 @@ var uuid = const Uuid();
 class Activity {
   final String id = uuid.v4();
   final int raAluno = 123456;
-  final String titulo;
-  final String descricao;
-  final String arquivoPath;
-  final int horasSolicitadas;
-  final int horasAprovadas = 0;
-  final DateTime dataEntrega = DateTime.now();
+  String titulo;
+  String descricao;
+  String arquivoPath;
+  int horasSolicitadas;
+  int horasAprovadas = 0;
+  DateTime dataEntrega = DateTime.now();
   DateTime dataAtividade = DateTime.utc(2025, 04, 01);
-  final String status;
+  String status;
 
   int pageIndex = 0;
 

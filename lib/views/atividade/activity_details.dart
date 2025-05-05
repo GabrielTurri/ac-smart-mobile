@@ -1,10 +1,10 @@
 // import 'package:ac_smart/models/activity.dart';
 
-import 'package:ac_smart/viewmodels/activity_details_viewmodel.dart';
-import 'package:ac_smart/widgets/activity_menu.dart';
+import 'package:ac_smart/views/atividade/editar_atividade.dart';
+import 'package:ac_smart/views/atividade/ui/app_bar.dart';
 
 import 'package:provider/provider.dart';
-import 'package:ac_smart/views/atividade/ui/app_bar.dart';
+
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
@@ -145,129 +145,6 @@ class _InserirAtividadeState extends State<InserirAtividade> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class EditarAtividade extends StatelessWidget {
-  const EditarAtividade({
-    super.key,
-    required this.id,
-  });
-
-  final String id;
-
-  @override
-  Widget build(BuildContext context) {
-    final atividade = context.read<AtividadeProvider>().consultarAtividade(id);
-    final bool isEditable = (atividade.status == 'Aprovada') ? false : true;
-    return ChangeNotifierProvider(
-      create: (context) => ActivityListItemProvider(),
-      child: Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'Visualizar Atividade',
-              style: TextStyle(color: Colors.white),
-            ),
-            centerTitle: true,
-            backgroundColor: const Color(0xff043565),
-            iconTheme: const IconThemeData(color: Colors.white),
-            actions: const <Widget>[ActivityMenu()],
-            // [
-            //   IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
-            // ],
-          ),
-          body: Consumer<ActivityListItemProvider>(
-              builder: (context, provider, child) {
-            if (isEditable) {
-              return ListView(
-                children: [
-                  _buildListTile(context, provider, atividade.titulo, 0),
-                  _buildListTile(context, provider, atividade.descricao, 1),
-                  _buildListTile(context, provider, atividade.arquivoPath, 2),
-                  _buildListTile(
-                      context, provider, atividade.dataAtividade.toString(), 3),
-                  _buildListTile(context, provider,
-                      atividade.horasSolicitadas.toString(), 4),
-                ],
-              );
-            } else {
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Status: '),
-                        Text(
-                          atividade.status,
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: [
-                        ListTile(
-                          title: const Text('Título'),
-                          subtitle: Text(atividade.titulo),
-                        ),
-                        ListTile(
-                          title: const Text('Descrição'),
-                          subtitle: Text(atividade.descricao),
-                        ),
-                        ListTile(
-                          title: const Text('Status'),
-                          subtitle: Text(atividade.status),
-                        ),
-                        ListTile(
-                          title: const Text('Data da atividade'),
-                          subtitle: Text('${atividade.dataAtividade}'),
-                        ),
-                        ListTile(
-                          title: const Text('Horas Solicitadas'),
-                          subtitle: Text('${atividade.horasSolicitadas}'),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            }
-          })),
-    );
-  }
-
-  Widget _buildListTile(BuildContext context, ActivityListItemProvider provider,
-      String field, int index) {
-    final item = provider.items[index];
-    final controller = TextEditingController(text: item.text);
-
-    return ListTile(
-      title: Text(item.text),
-      subtitle: item.isEditing
-          ? TextField(
-              controller: controller,
-              autofocus: true,
-              onSubmitted: (newValue) => provider.saveEditing(index, newValue),
-              onEditingComplete: () =>
-                  provider.saveEditing(index, controller.text),
-            )
-          : Text(field),
-      onTap: () {
-        if (!item.isEditing) {
-          provider.startEditing(index);
-        }
-      },
-      trailing: item.isEditing
-          ? IconButton(
-              icon: Icon(Icons.check),
-              onPressed: () => provider.saveEditing(index, controller.text),
-            )
-          : Icon(Icons.edit),
     );
   }
 }

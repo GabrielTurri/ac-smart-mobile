@@ -12,20 +12,24 @@ class ActivityList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Activity> atividades = context.watch<AtividadeProvider>().atividades;
+    final atividadeProvider = context.read<AtividadeProvider>();
 
     final listaAtividades = (isReproved)
         ? atividades.where((a) => a.status == "Reprovada").toList()
         : atividades.where((a) => a.status != "Reprovada").toList();
 
-    return SizedBox(
-      height: 600,
-      width: double.infinity,
-      child: ListView.builder(
-        itemCount: listaAtividades.length,
-        itemBuilder: (context, index) {
-          return ActivityContainer(listaAtividades[index],
-              isReproved: isReproved);
-        },
+    return RefreshIndicator(
+      onRefresh: () => atividadeProvider.atualizar(),
+      child: SizedBox(
+        height: 600,
+        width: double.infinity,
+        child: ListView.builder(
+          itemCount: listaAtividades.length,
+          itemBuilder: (context, index) {
+            return ActivityContainer(listaAtividades[index],
+                isReproved: isReproved);
+          },
+        ),
       ),
     );
   }

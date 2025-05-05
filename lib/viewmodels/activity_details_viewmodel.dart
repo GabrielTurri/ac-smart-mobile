@@ -21,8 +21,9 @@ class ActivityListItemProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void saveEditing(int index, String newText) {
-    _items[index].text = newText;
+  void saveEditing(int index, String idAtividade, String newText) {
+    // _items[index].text = newText;
+    // atividades.firstWhere((a) => a.id == idAtividade);
     _items[index].isEditing = false;
     notifyListeners();
   }
