@@ -1,0 +1,15 @@
+meta {
+  name: Get Student
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/students/{{studentId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

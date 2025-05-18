@@ -1,0 +1,15 @@
+meta {
+  name: Get Activity
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/atividades/682924ba76b66900579f8ad3
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

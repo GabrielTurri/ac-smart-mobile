@@ -1,0 +1,23 @@
+meta {
+  name: Approve Activity
+  type: http
+  seq: 5
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}/approve
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "approved_hours": 10,
+    "observation": "Activity approved with all requested hours"
+  }
+}

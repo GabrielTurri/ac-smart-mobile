@@ -1,0 +1,37 @@
+meta {
+  name: Create Course
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/cursos
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "name": "Test Course",
+    "required_hours": 200,
+    "coordinator_id": "{{coordinatorId}}",
+    "disciplines": [
+      {
+        "name": "Test Discipline",
+        "description": "Test discipline description"
+      }
+    ]
+  }
+}
+
+script:post-response {
+  // Store the created course ID for subsequent requests
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("newCourseId", res.body.id);
+  }
+}

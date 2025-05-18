@@ -1,0 +1,28 @@
+meta {
+  name: List Student Activities
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/atividades/aluno/{{studentId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+query {
+  status: all
+  pagina: 1
+  limite: 10
+}
+
+script:post-response {
+  // Store an activity ID for subsequent requests if available
+  if (res.status === 200 && res.body.atividades && res.body.atividades.length > 0) {
+    bru.setEnvVar("activityId", res.body.atividades[0].activity_id);
+  }
+}

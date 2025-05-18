@@ -1,0 +1,15 @@
+meta {
+  name: Get Coordinator
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/api/coordinators/{{coordinatorId}}
+  body: none
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}

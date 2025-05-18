@@ -1,0 +1,24 @@
+meta {
+  name: Update Activity
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "Updated Activity",
+    "description": "Updated activity description",
+    "requested_hours": 15
+  }
+}

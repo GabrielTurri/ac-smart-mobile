@@ -1,0 +1,22 @@
+meta {
+  name: Reject Activity
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}/reject
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "observation": "Activity rejected due to insufficient documentation"
+  }
+}

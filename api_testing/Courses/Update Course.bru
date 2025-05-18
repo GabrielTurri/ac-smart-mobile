@@ -1,0 +1,29 @@
+meta {
+  name: Update Course
+  type: http
+  seq: 4
+}
+
+put {
+  url: {{baseUrl}}/api/cursos/{{newCourseId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "nome_curso": "Updated Course",
+    "horas_complementares": 180,
+    "disciplinas": [
+      {
+        "nome": "Updated Discipline",
+        "descricao": "Updated discipline description"
+      }
+    ]
+  }
+}
