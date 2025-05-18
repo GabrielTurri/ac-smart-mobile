@@ -1,9 +1,5 @@
-import 'dart:io';
-
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/viewmodels/activity_details_viewmodel.dart';
-import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
-import 'package:ac_smart/widgets/activity_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

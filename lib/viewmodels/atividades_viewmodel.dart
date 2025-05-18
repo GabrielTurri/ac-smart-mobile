@@ -10,13 +10,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
   final AtividadeService _service = AtividadeService();
-  String baseUrl = Service().url;
+  final String baseUrl = Service().url;
   List<Activity> _atividades = [];
-  late Activity atividadeConsultada;
+
   List<Activity> get atividades => _atividades;
 
   bool _carregando = false;
   bool get carregando => _carregando;
+
+  setAtividades(List<Activity> atividades) {
+    _atividades = atividades;
+  }
 
   Future<void> carregarAtividades() async {
     _carregando = true;
@@ -34,7 +38,7 @@ class AtividadeProvider with ChangeNotifier {
 
   Future<void> consultarAtividade(id) async {
     Activity atividade = await _service.fetchAtividade(id);
-    atividadeConsultada = atividade;
+    // atividadeConsultada = atividade;
     notifyListeners();
   }
 

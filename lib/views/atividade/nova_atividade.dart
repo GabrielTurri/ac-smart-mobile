@@ -8,23 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
-class ActivityDetails extends StatelessWidget {
-  const ActivityDetails({super.key});
+class InserirAtividade extends StatelessWidget {
+  InserirAtividade({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return const InserirAtividade();
-  }
-}
-
-class InserirAtividade extends StatefulWidget {
-  const InserirAtividade({super.key});
-
-  @override
-  State<InserirAtividade> createState() => _InserirAtividadeState();
-}
-
-class _InserirAtividadeState extends State<InserirAtividade> {
   final _descricaoController = TextEditingController();
   final _tituloController = TextEditingController();
   final _horasSolicitadasController = TextEditingController();

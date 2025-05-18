@@ -3,7 +3,7 @@ import 'package:ac_smart/views/atividade/atividades.dart';
 import 'package:ac_smart/views/atividade/editar_atividade.dart';
 import 'package:ac_smart/views/atividade/home_page.dart';
 import 'package:ac_smart/views/login.dart';
-import 'package:ac_smart/views/atividade/activity_details.dart';
+import 'package:ac_smart/views/atividade/nova_atividade.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {
@@ -33,7 +33,7 @@ class Routes {
           ]),
       GoRoute(
         path: '/new_activity',
-        builder: (context, state) => const ActivityDetails(),
+        builder: (context, state) => InserirAtividade(),
       ),
       GoRoute(
         path: '/login',
