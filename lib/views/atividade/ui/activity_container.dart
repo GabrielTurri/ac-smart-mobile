@@ -5,16 +5,33 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-class ActivityList extends StatelessWidget {
+class ActivityList extends StatefulWidget {
   const ActivityList({super.key, this.isReproved = false});
   final bool isReproved;
+
+  @override
+  State<ActivityList> createState() => _ActivityListState();
+}
+
+class _ActivityListState extends State<ActivityList> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      // Chama apenas uma vez
+      context.read<AtividadeProvider>().atualizar();
+      _initialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     List<Activity> atividades = context.watch<AtividadeProvider>().atividades;
     final atividadeProvider = context.read<AtividadeProvider>();
 
-    final listaAtividades = (isReproved)
+    final listaAtividades = (widget.isReproved)
         ? atividades.where((a) => a.status == "Reprovada").toList()
         : atividades.where((a) => a.status != "Reprovada").toList();
 
@@ -27,7 +44,7 @@ class ActivityList extends StatelessWidget {
           itemCount: listaAtividades.length,
           itemBuilder: (context, index) {
             return ActivityContainer(listaAtividades[index],
-                isReproved: isReproved);
+                isReproved: widget.isReproved);
           },
         ),
       ),
@@ -73,7 +90,15 @@ class ActivityTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: tileIcon,
-      onTap: () => context.push('/activities/${atividade.id}'),
+      onTap: () {
+        context.read<AtividadeProvider>().consultarAtividade(atividade.id);
+        // final atividadeConsultada =
+        //     await provider.consultarAtividade(atividade);
+        if (context.mounted) {
+          context.push('/activities/details', extra: atividade);
+        }
+        // context.push('/activities/${atividade.id}');
+      },
       onLongPress: () => HoldActivityMenu(),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

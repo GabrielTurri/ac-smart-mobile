@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/viewmodels/activity_details_viewmodel.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:ac_smart/widgets/activity_menu.dart';
@@ -7,15 +10,16 @@ import 'package:provider/provider.dart';
 class EditarAtividade extends StatelessWidget {
   const EditarAtividade({
     super.key,
-    required this.id,
+    required this.atividade,
   });
 
-  final String id;
+  final Activity atividade;
 
   @override
   Widget build(BuildContext context) {
-    var atividade = context.read<AtividadeProvider>().consultarAtividade(id);
-    final itemAtividade = context.read<AtividadeProvider>();
+    // Activity atividade = context.extra as Activity;
+    // Activity atividade = context.watch<AtividadeProvider>().atividadeConsultada;
+    // final itemAtividade = context.read<AtividadeProvider>();
 
     final bool isEditable = (atividade.status == 'Aprovada') ? false : true;
     return ChangeNotifierProvider(
@@ -50,8 +54,8 @@ class EditarAtividade extends StatelessWidget {
                   TextEditingController(text: atividade.titulo);
               final descricaoController =
                   TextEditingController(text: atividade.descricao);
-              final arquivoPathController =
-                  TextEditingController(text: atividade.arquivoPath);
+              // final arquivoPathController =
+              //     TextEditingController(text: atividade.arquivoPath);
               final dataAtividadeController = TextEditingController(
                   text: atividade.dataAtividade.toString());
               final statusController =
@@ -66,10 +70,10 @@ class EditarAtividade extends StatelessWidget {
                         ? TextField(
                             controller: tituloController,
                             autofocus: true,
-                            onSubmitted: (newValue) =>
-                                provider.saveEditing(0, id, newValue),
+                            onSubmitted: (newValue) => provider.saveEditing(
+                                0, atividade.id!, newValue),
                             onEditingComplete: () => provider.saveEditing(
-                                0, id, tituloController.text),
+                                0, atividade.id!, tituloController.text),
                           )
                         : Text(atividade.titulo),
                     onTap: () {
@@ -84,7 +88,7 @@ class EditarAtividade extends StatelessWidget {
                               atividade.titulo = tituloController.text;
                               provider.items[0].isEditing = false;
                               provider.saveEditing(
-                                  0, id, tituloController.text);
+                                  0, atividade.id!, tituloController.text);
                             },
                           )
                         : const Icon(Icons.edit),
@@ -95,10 +99,10 @@ class EditarAtividade extends StatelessWidget {
                         ? TextField(
                             controller: descricaoController,
                             autofocus: true,
-                            onSubmitted: (newValue) =>
-                                provider.saveEditing(1, id, newValue),
+                            onSubmitted: (newValue) => provider.saveEditing(
+                                1, atividade.id!, newValue),
                             onEditingComplete: () => provider.saveEditing(
-                                1, id, descricaoController.text),
+                                1, atividade.id!, descricaoController.text),
                           )
                         : Text(atividade.descricao),
                     onTap: () {
@@ -113,51 +117,51 @@ class EditarAtividade extends StatelessWidget {
                               atividade.descricao = descricaoController.text;
                               provider.items[1].isEditing = false;
                               provider.saveEditing(
-                                  1, id, descricaoController.text);
+                                  1, atividade.id!, descricaoController.text);
                             },
                           )
                         : const Icon(Icons.edit),
                   ),
-                  ListTile(
-                    title: const Text('Anexo'),
-                    subtitle: provider.items[2].isEditing
-                        ? TextField(
-                            controller: arquivoPathController,
-                            autofocus: true,
-                            onSubmitted: (newValue) =>
-                                provider.saveEditing(2, id, newValue),
-                            onEditingComplete: () => provider.saveEditing(
-                                2, id, arquivoPathController.text),
-                          )
-                        : Text(atividade.arquivoPath),
-                    onTap: () {
-                      if (!provider.items[2].isEditing) {
-                        provider.startEditing(2);
-                      }
-                    },
-                    trailing: provider.items[2].isEditing
-                        ? IconButton(
-                            icon: const Icon(Icons.check),
-                            onPressed: () {
-                              atividade.arquivoPath =
-                                  arquivoPathController.text;
-                              provider.items[2].isEditing = false;
-                              provider.saveEditing(
-                                  2, id, arquivoPathController.text);
-                            },
-                          )
-                        : const Icon(Icons.edit),
-                  ),
+                  // ListTile(
+                  //   title: const Text('Anexo'),
+                  //   subtitle: provider.items[2].isEditing
+                  //       ? TextField(
+                  //           controller: arquivoPathController,
+                  //           autofocus: true,
+                  //           onSubmitted: (newValue) =>
+                  //               provider.saveEditing(2, id, newValue),
+                  //           onEditingComplete: () => provider.saveEditing(
+                  //               2, id, arquivoPathController.text),
+                  //         )
+                  //       : Text(atividade.arquivoPath),
+                  //   onTap: () {
+                  //     if (!provider.items[2].isEditing) {
+                  //       provider.startEditing(2);
+                  //     }
+                  //   },
+                  //   trailing: provider.items[2].isEditing
+                  //       ? IconButton(
+                  //           icon: const Icon(Icons.check),
+                  //           onPressed: () {
+                  //             atividade.arquivoPath =
+                  //                 arquivoPathController.text;
+                  //             provider.items[2].isEditing = false;
+                  //             provider.saveEditing(
+                  //                 2, id, arquivoPathController.text);
+                  //           },
+                  //         )
+                  //       : const Icon(Icons.edit),
+                  // ),
                   ListTile(
                     title: const Text('Status'),
                     subtitle: provider.items[3].isEditing
                         ? TextField(
                             controller: statusController,
                             autofocus: true,
-                            onSubmitted: (newValue) =>
-                                provider.saveEditing(3, id, newValue),
+                            onSubmitted: (newValue) => provider.saveEditing(
+                                3, atividade.id!, newValue),
                             onEditingComplete: () => provider.saveEditing(
-                                3, id, statusController.text),
+                                3, atividade.id!, statusController.text),
                           )
                         : Text(atividade.status),
                     onTap: () {
@@ -172,7 +176,7 @@ class EditarAtividade extends StatelessWidget {
                               atividade.status = statusController.text;
                               provider.items[3].isEditing = false;
                               provider.saveEditing(
-                                  2, id, statusController.text);
+                                  2, atividade.id!, statusController.text);
                             },
                           )
                         : const Icon(Icons.edit),
@@ -245,9 +249,9 @@ class EditarAtividade extends StatelessWidget {
               controller: controller,
               autofocus: true,
               onSubmitted: (newValue) =>
-                  provider.saveEditing(index, id, newValue),
+                  provider.saveEditing(index, atividade.id!, newValue),
               onEditingComplete: () =>
-                  provider.saveEditing(index, id, controller.text),
+                  provider.saveEditing(index, atividade.id!, controller.text),
             )
           : Text(field),
       onTap: () {
@@ -258,7 +262,8 @@ class EditarAtividade extends StatelessWidget {
       trailing: item.isEditing
           ? IconButton(
               icon: Icon(Icons.check),
-              onPressed: () => provider.saveEditing(index, id, controller.text),
+              onPressed: () =>
+                  provider.saveEditing(index, atividade.id!, controller.text),
             )
           : Icon(Icons.edit),
     );

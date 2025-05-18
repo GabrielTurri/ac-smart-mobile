@@ -37,10 +37,10 @@ class HomePage extends StatelessWidget {
       body: PageView(
         controller: homepage.pageController,
         onPageChanged: homepageProvider.setPaginaAtual,
-        children: const [
+        children: [
           Dashboard(),
-          Activities(),
-          Activities(isReproved: true),
+          const Activities(),
+          const Activities(isReproved: true),
         ],
       ),
       bottomNavigationBar:

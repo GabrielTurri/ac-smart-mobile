@@ -1,47 +1,41 @@
+import 'dart:convert';
 import 'package:ac_smart/models/activity_model.dart';
+import 'package:ac_smart/services/atividade_service.dart';
+import 'package:ac_smart/services/service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
+  final AtividadeService _service = AtividadeService();
+  String baseUrl = Service().url;
   List<Activity> _atividades = [];
-  // List<Activity> _atividades = [
-  //   Activity(
-  //       titulo: 'Palestra Python',
-  //       horasSolicitadas: 4,
-  //       dataAtividade: DateTime(2025, 04)),
-  //   Activity(
-  //     titulo: 'Palestra Machine Learning',
-  //     horasSolicitadas: 8,
-  //     status: 'Reprovada',
-  //     dataAtividade: DateTime(2025, 04),
-  //   ),
-  //   Activity(
-  //     titulo: 'Certificado: HTML Básico',
-  //     horasSolicitadas: 4,
-  //     status: 'Aprovada',
-  //     dataAtividade: DateTime(2025, 04),
-  //   ),
-  // ];
-
+  late Activity atividadeConsultada;
   List<Activity> get atividades => _atividades;
 
-  AtividadeProvider() {
-    _setupAtividadesTable();
+  bool _carregando = false;
+  bool get carregando => _carregando;
+
+  Future<void> carregarAtividades() async {
+    _carregando = true;
+
+    try {
+      _atividades = await _service.fetchAtividades();
+    } catch (e) {
+      debugPrint('Erro ao carregar atividades: $e');
+      _atividades = [];
+    }
+
+    _carregando = false;
+    notifyListeners();
   }
 
-  _listaAtividadesIsEmpty() async {}
-
-  _setupAtividadesTable() async {
-    // if(await _listaAtividadesIsEmpty()){}
-    String baseUrl = 'http://localhost:5000';
-    String studentId = '6806a78edd1190fa2b330bb7';
-    String uri = '$baseUrl/api/atividades/aluno/$studentId';
-  }
-
-  Activity consultarAtividade(id) {
-    return _atividades.firstWhere((a) => a.id == id);
+  Future<void> consultarAtividade(id) async {
+    Activity atividade = await _service.fetchAtividade(id);
+    atividadeConsultada = atividade;
+    notifyListeners();
   }
 
   Future<void> selecionarArquivo({String arquivoPath = ''}) async {
@@ -89,29 +83,76 @@ class AtividadeProvider with ChangeNotifier {
 //     }
 //   }
 
-  void salvar(
-      {descricao,
-      statusSelecionado,
-      dataSelecionada,
-      arquivoPath,
-      horasSolicitadas}) {
+  // void salvar({
+  //   descricao,
+  //   statusSelecionado,
+  //   dataSelecionada,
+  //   arquivoPath,
+  //   horasSolicitadas,
+  // }) {
+  //   Activity novaAtividade = Activity(
+  //     titulo: descricao,
+  //     dataAtividade: dataSelecionada,
+  //     horasSolicitadas: horasSolicitadas,
+  //     alunoId: '',
+  //     descricao: '',
+  //   );
+  //   adicionarAtividade(novaAtividade);
+  // }
+  Future<void> incluirAtividade({
+    required String titulo,
+    required String descricao,
+    required String dataAtividade,
+    required int horasSolicitadas,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
     Activity novaAtividade = Activity(
       titulo: descricao,
-      arquivoPath: arquivoPath,
-      dataAtividade: dataSelecionada,
-      status: statusSelecionado,
+      dataAtividade: DateTime.parse(dataAtividade),
+      alunoId: prefs.getString('userId')!,
+      descricao: descricao,
       horasSolicitadas: horasSolicitadas,
     );
-    adicionarAtividade(novaAtividade);
+
+    String baseUrl = Service().url;
+
+    final url = Uri.parse('$baseUrl/api/atividades/');
+    String token = prefs.getString('token')!;
+    String userId = prefs.getString('userId')!;
+
+    final response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'title': titulo,
+        'description': descricao,
+        'requested_hours': horasSolicitadas,
+        'completion_date': '2025-05-18',
+        'student_id': userId,
+      }),
+    );
+    if (response.statusCode == 200) {
+      // adicionarAtividade(novaAtividade);
+      notifyListeners();
+      return debugPrint(
+        'Nova atividade cadastrada: \n$novaAtividade \n ${response.body}',
+      );
+    } else {
+      debugPrint(
+          'Erro ao cadastrar atividade: ${response.statusCode} - ${response.body}');
+    }
   }
 
-  void adicionarAtividade(Activity atividade) {
-    _atividades.add(atividade);
-    notifyListeners();
-  }
+  // void adicionarAtividade(Activity atividade) {
+  //   _atividades.add(atividade);
+  //   notifyListeners();
+  // }
 
   Future<void> atualizar() {
-    notifyListeners();
+    carregarAtividades();
     return Future.delayed(const Duration(seconds: 3));
   }
 
@@ -138,17 +179,34 @@ class AtividadeProvider with ChangeNotifier {
     if (descricao != null) {
       atividade.descricao = descricao;
     }
-    if (statusSelecionado != null) {
-      atividade.status = statusSelecionado;
-    }
     if (dataSelecionada != null) {
       atividade.dataAtividade = dataSelecionada;
-    }
-    if (arquivoPath != null) {
-      atividade.arquivoPath = arquivoPath;
     }
     if (horasSolicitadas != null) {
       atividade.horasSolicitadas = horasSolicitadas;
     }
   }
+}
+
+Future<void> alterarAtividade({
+  required id,
+  required descricao,
+  required statusSelecionado,
+  required dataAtividade,
+  required arquivoPath,
+  required horasSolicitadas,
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  Activity novaAtividade = Activity(
+    id: id,
+    titulo: descricao,
+    dataAtividade: dataAtividade,
+    alunoId: prefs.getString('userId')!,
+    descricao: '',
+    horasSolicitadas: horasSolicitadas,
+  );
+  // AtividadeProvider().adicionarAtividade(novaAtividade);
+
+  return debugPrint('Nova atividade cadastrada: \n$novaAtividade');
 }

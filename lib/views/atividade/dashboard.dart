@@ -1,14 +1,22 @@
+import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
 import 'package:ac_smart/views/atividade/ui/app_bar.dart';
 import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
 import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 class Dashboard extends StatelessWidget {
-  const Dashboard({super.key});
+  Dashboard({super.key});
+  late String nomeUsuario;
+  late HomepageProvider homepageProvider;
 
   @override
   Widget build(BuildContext context) {
+    homepageProvider = context.read<HomepageProvider>();
+    nomeUsuario = context.watch<HomepageProvider>().nomeUsuario;
+    homepageProvider.lerNomeUsuario();
+
     return Scaffold(
       appBar: const ACSmartAppBar(
         title: 'Dashboard',
@@ -20,6 +28,23 @@ class Dashboard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  children: [
+                    Text(
+                      'Boas vindas, $nomeUsuario',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    const Text(
+                      'Nome do curso',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
               Container(
                 decoration: dashboardPanelDecoration(),
                 padding: const EdgeInsets.all(16),

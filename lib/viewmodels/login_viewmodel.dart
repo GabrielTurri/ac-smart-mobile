@@ -42,6 +42,7 @@ class LoginProvider extends ChangeNotifier {
       await prefs.setString('token', data['token']);
       await prefs.setString('userId', userId);
       await prefs.setString('userName', userName);
+      await prefs.setString('userSurname', data['usuario']['surname']);
 
       // Aqui você pode salvar os dados localmente também se quiser
     } else {

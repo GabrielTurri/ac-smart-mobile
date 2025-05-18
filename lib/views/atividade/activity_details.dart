@@ -9,12 +9,11 @@ import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
 class ActivityDetails extends StatelessWidget {
-  const ActivityDetails({super.key, this.id = ''});
-  final String id;
+  const ActivityDetails({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return (id.isEmpty) ? const InserirAtividade() : EditarAtividade(id: id);
+    return const InserirAtividade();
   }
 }
 
@@ -119,14 +118,12 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       horasSolicitadas != 0) {
                     _anexo = 'path';
                     _data = DateTime.now();
-                    debugPrint('teste');
 
-                    atividadeProvider.salvar(
-                      arquivoPath: _anexo,
-                      dataSelecionada: _data,
+                    atividadeProvider.incluirAtividade(
+                      titulo: _tituloController.text,
                       descricao: _descricaoController.text,
-                      statusSelecionado: atividadeProvider.statusSelecionado,
                       horasSolicitadas: horasSolicitadas,
+                      dataAtividade: '2025-05-01',
                     );
                   } else {
                     // Exibir mensagem de erro

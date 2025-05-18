@@ -1,4 +1,6 @@
+import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/views/atividade/atividades.dart';
+import 'package:ac_smart/views/atividade/editar_atividade.dart';
 import 'package:ac_smart/views/atividade/home_page.dart';
 import 'package:ac_smart/views/login.dart';
 import 'package:ac_smart/views/atividade/activity_details.dart';
@@ -22,11 +24,10 @@ class Routes {
           builder: (context, state) => const Activities(),
           routes: [
             GoRoute(
-              path: ':id',
+              path: 'details',
               builder: (context, state) {
-                String? id = state.pathParameters['id'];
-                id ??= '';
-                return ActivityDetails(id: id);
+                final atividade = state.extra as Activity;
+                return EditarAtividade(atividade: atividade);
               },
             ),
           ]),

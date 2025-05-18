@@ -14,7 +14,7 @@ class Activities extends StatelessWidget {
 
     return Scaffold(
       appBar: ACSmartAppBar(
-        title: (isReproved) ? 'Reprovadas' : 'Atividades',
+        title: (isReproved) ? 'Atividades Reprovadas' : 'Atividades',
       ),
       body: RefreshIndicator(
         onRefresh: () => atividade.atualizar(),
