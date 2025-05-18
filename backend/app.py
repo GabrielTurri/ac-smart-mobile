@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 import os
 from api.routes import register_routes
+from utils.mongo_encoder import MongoJSONEncoder
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -11,6 +12,9 @@ load_dotenv()
 # Inicializar aplicação Flask
 app = Flask(__name__)
 CORS(app)
+
+# Configurar o encoder JSON personalizado para lidar com ObjectId do MongoDB
+app.json_encoder = MongoJSONEncoder
 
 # Configurações do JWT
 app.config['JWT_SECRET_KEY'] = os.getenv('JWT_SECRET_KEY', 'seu-segredo-temporario')

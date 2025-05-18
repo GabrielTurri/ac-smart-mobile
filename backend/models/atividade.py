@@ -44,7 +44,7 @@ class Atividade:
             pagina (int): Número da página
             
         Returns:
-            list: Lista de atividades encontradas
+            list: Lista de atividades encontradas com ObjectIds convertidos para strings
         """
         try:
             skip = (pagina - 1) * limite
@@ -52,8 +52,20 @@ class Atividade:
             if filtros is None:
                 filtros = {}
                 
-            atividades = self.collection.find(filtros).sort('data_criacao', -1).skip(skip).limit(limite)
-            return list(atividades)
+            atividades_cursor = self.collection.find(filtros).sort('data_criacao', -1).skip(skip).limit(limite)
+            
+            # Converter ObjectIds para strings
+            atividades = []
+            for atividade in atividades_cursor:
+                # Converter _id para string
+                if '_id' in atividade:
+                    atividade['_id'] = str(atividade['_id'])
+                # Converter outros ObjectIds que possam existir
+                if 'aluno_id' in atividade and isinstance(atividade['aluno_id'], ObjectId):
+                    atividade['aluno_id'] = str(atividade['aluno_id'])
+                atividades.append(atividade)
+                
+            return atividades
         except Exception as e:
             print(f"Erro ao buscar atividades: {e}")
             return []
@@ -66,10 +78,20 @@ class Atividade:
             atividade_id (str): ID da atividade
             
         Returns:
-            dict: Dados da atividade encontrada
+            dict: Dados da atividade encontrada com ObjectIds convertidos para strings
         """
         try:
-            return self.collection.find_one({"_id": ObjectId(atividade_id)})
+            atividade = self.collection.find_one({"_id": ObjectId(atividade_id)})
+            
+            if atividade:
+                # Converter _id para string
+                if '_id' in atividade:
+                    atividade['_id'] = str(atividade['_id'])
+                # Converter outros ObjectIds que possam existir
+                if 'aluno_id' in atividade and isinstance(atividade['aluno_id'], ObjectId):
+                    atividade['aluno_id'] = str(atividade['aluno_id'])
+                    
+            return atividade
         except Exception as e:
             print(f"Erro ao buscar atividade por ID: {e}")
             return None
@@ -85,7 +107,7 @@ class Atividade:
             pagina (int): Número da página
             
         Returns:
-            list: Lista de atividades encontradas
+            list: Lista de atividades encontradas com ObjectIds convertidos para strings
         """
         try:
             skip = (pagina - 1) * limite
@@ -95,8 +117,20 @@ class Atividade:
             if status:
                 filtros["status"] = status
                 
-            atividades = self.collection.find(filtros).sort('data_criacao', -1).skip(skip).limit(limite)
-            return list(atividades)
+            atividades_cursor = self.collection.find(filtros).sort('data_criacao', -1).skip(skip).limit(limite)
+            
+            # Converter ObjectIds para strings
+            atividades = []
+            for atividade in atividades_cursor:
+                # Converter _id para string
+                if '_id' in atividade:
+                    atividade['_id'] = str(atividade['_id'])
+                # Converter outros ObjectIds que possam existir
+                if 'aluno_id' in atividade and isinstance(atividade['aluno_id'], ObjectId):
+                    atividade['aluno_id'] = str(atividade['aluno_id'])
+                atividades.append(atividade)
+                
+            return atividades
         except Exception as e:
             print(f"Erro ao buscar atividades por aluno: {e}")
             return []
