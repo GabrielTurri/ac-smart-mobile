@@ -1,5 +1,6 @@
 import 'package:ac_smart/views/atividade/ui/app_bar.dart';
 import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
+import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -55,12 +56,14 @@ class Dashboard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          LoginProvider().fazerLogin(context);
+                        },
                         style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xff476988),
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
-                        child: const Text("Minhas AC's"),
+                        child: const Text("Fazer Login"),
                       ),
                     ),
                     SizedBox(

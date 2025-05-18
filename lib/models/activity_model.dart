@@ -5,6 +5,16 @@ import 'package:uuid/uuid.dart';
 var uuid = const Uuid();
 
 class Activity {
+// "_id": "682924ba76b66900579f8ad3",
+//       "aluno_id": "6806a78edd1190fa2b330bb7",
+//       "data": "Mon, 01 May 2023 00:00:00 GMT",
+//       "data_criacao": "Sat, 17 May 2025 21:07:22 GMT",
+//       "descricao": "Test activity description",
+//       "horas_aprovadas": 0,
+//       "horas_solicitadas": 10,
+//       "status": "Pendente",
+//       "titulo": "Test Activity"
+
   final String id = uuid.v4();
   final int raAluno = 123456;
   String titulo;

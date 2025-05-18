@@ -1,29 +1,44 @@
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
-  List<Activity> _atividades = [
-    Activity(
-        titulo: 'Palestra Python',
-        horasSolicitadas: 4,
-        dataAtividade: DateTime(2025, 04)),
-    Activity(
-      titulo: 'Palestra Machine Learning',
-      horasSolicitadas: 8,
-      status: 'Reprovada',
-      dataAtividade: DateTime(2025, 04),
-    ),
-    Activity(
-      titulo: 'Certificado: HTML Básico',
-      horasSolicitadas: 4,
-      status: 'Aprovada',
-      dataAtividade: DateTime(2025, 04),
-    ),
-  ];
+  List<Activity> _atividades = [];
+  // List<Activity> _atividades = [
+  //   Activity(
+  //       titulo: 'Palestra Python',
+  //       horasSolicitadas: 4,
+  //       dataAtividade: DateTime(2025, 04)),
+  //   Activity(
+  //     titulo: 'Palestra Machine Learning',
+  //     horasSolicitadas: 8,
+  //     status: 'Reprovada',
+  //     dataAtividade: DateTime(2025, 04),
+  //   ),
+  //   Activity(
+  //     titulo: 'Certificado: HTML Básico',
+  //     horasSolicitadas: 4,
+  //     status: 'Aprovada',
+  //     dataAtividade: DateTime(2025, 04),
+  //   ),
+  // ];
 
   List<Activity> get atividades => _atividades;
+
+  AtividadeProvider() {
+    _setupAtividadesTable();
+  }
+
+  _listaAtividadesIsEmpty() async {}
+
+  _setupAtividadesTable() async {
+    // if(await _listaAtividadesIsEmpty()){}
+    String baseUrl = 'http://localhost:5000';
+    String studentId = '6806a78edd1190fa2b330bb7';
+    String uri = '$baseUrl/api/atividades/aluno/$studentId';
+  }
 
   Activity consultarAtividade(id) {
     return _atividades.firstWhere((a) => a.id == id);
