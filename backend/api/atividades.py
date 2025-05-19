@@ -1,13 +1,84 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory, Response
 from flask_jwt_extended import jwt_required, get_jwt_identity, get_jwt
 from models.atividade import Atividade
 from models.aluno import Aluno
 import os
+import uuid
+import base64
 from datetime import datetime
 from utils.json_utils import serialize_mongo_doc
 from utils.mongo_utils import json_response
+from werkzeug.utils import secure_filename
+from utils.storage_utils import StorageManager
 
 atividades_blueprint = Blueprint('atividades', __name__)
+
+# Configuração para os anexos
+# Manter o diretório local como fallback caso a integração com Hetzner não esteja configurada
+ATTACHMENTS_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'attachments')
+os.makedirs(ATTACHMENTS_FOLDER, exist_ok=True)
+
+# Extensões permitidas para os anexos
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx', 'xls', 'xlsx', 'txt'}
+
+# Inicializar o gerenciador de armazenamento
+storage_manager = None
+try:
+    storage_manager = StorageManager()
+except Exception as e:
+    print(f"Aviso: Não foi possível inicializar o StorageManager. Usando armazenamento local. Erro: {e}")
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def save_attachment(file_data, original_filename=None, content_type=None):
+    """
+    Salva um arquivo anexo no sistema de armazenamento
+    
+    Args:
+        file_data (bytes): Dados do arquivo em bytes
+        original_filename (str): Nome original do arquivo
+        content_type (str): Tipo MIME do arquivo
+        
+    Returns:
+        str: Caminho ou URL do arquivo salvo
+    """
+    try:
+        # Gerar um nome de arquivo único
+        if original_filename:
+            # Garantir que o nome do arquivo é seguro
+            filename = secure_filename(original_filename)
+            # Adicionar um UUID para evitar colisões
+            unique_filename = f"{uuid.uuid4()}_{filename}"
+        else:
+            # Se não tiver nome original, usar apenas UUID
+            unique_filename = f"{uuid.uuid4()}.pdf"
+        
+        # Verificar se temos o gerenciador de armazenamento em nuvem
+        if storage_manager:
+            # Salvar no Hetzner Storage
+            file_url = storage_manager.upload_file(
+                file_data, 
+                f"attachments/{unique_filename}", 
+                content_type
+            )
+            if file_url:
+                # Retornar o URL completo com prefixo para identificar que é um URL externo
+                return f"hetzner:{unique_filename}"
+        
+        # Fallback para armazenamento local se não conseguir usar o Hetzner
+        # Caminho completo do arquivo
+        file_path = os.path.join(ATTACHMENTS_FOLDER, unique_filename)
+        
+        # Salvar o arquivo localmente
+        with open(file_path, 'wb') as f:
+            f.write(file_data)
+        
+        # Retornar o caminho relativo
+        return f"local:{unique_filename}"
+    except Exception as e:
+        print(f"Erro ao salvar anexo: {e}")
+        return None
 
 @atividades_blueprint.route('/', methods=['GET'])
 @jwt_required()
@@ -165,9 +236,48 @@ def criar_atividade():
         'aluno_id': usuario_id
     }
     
-    # Se tiver anexo, salvar em base64
+    # Se tiver anexo, salvar o arquivo e armazenar o caminho
     if 'anexo_base64' in dados and dados.get('anexo_base64'):
-        atividade_dados['anexo'] = dados.get('anexo_base64')
+        try:
+            # Extrair os dados do base64
+            anexo_data = dados.get('anexo_base64')
+            # Verificar se contém informações de tipo de arquivo (data:application/pdf;base64,)
+            if ';base64,' in anexo_data:
+                # Extrair o tipo de arquivo e os dados
+                header, encoded = anexo_data.split(';base64,')
+                file_type = header.split(':')[1] if ':' in header else None
+            else:
+                # Assumir que é apenas o conteúdo base64
+                encoded = anexo_data
+                file_type = None
+                
+            # Decodificar o base64
+            file_data = base64.b64decode(encoded)
+            
+            # Determinar a extensão do arquivo com base no tipo
+            extension = None
+            if file_type:
+                if 'pdf' in file_type:
+                    extension = 'pdf'
+                elif 'jpeg' in file_type or 'jpg' in file_type:
+                    extension = 'jpg'
+                elif 'png' in file_type:
+                    extension = 'png'
+                # Adicione mais mapeamentos conforme necessário
+            
+            # Nome do arquivo original (se fornecido)
+            original_filename = dados.get('nome_arquivo', f"anexo.{extension if extension else 'pdf'}")
+            
+            # Salvar o arquivo e obter o caminho
+            attachment_path = save_attachment(file_data, original_filename)
+            
+            if attachment_path:
+                # Armazenar apenas o caminho do arquivo no banco de dados
+                atividade_dados['anexo_path'] = attachment_path
+                # Manter compatibilidade com código existente que possa esperar o campo 'anexo'
+                atividade_dados['anexo'] = 'Arquivo salvo em disco'
+        except Exception as e:
+            print(f"Erro ao processar anexo: {e}")
     
     # Criar atividade
     atividade_model = Atividade()
@@ -259,9 +369,48 @@ def atualizar_atividade(atividade_id):
     if 'data' in dados_normalizados:
         atividade_dados['data'] = datetime.strptime(dados_normalizados.get('data'), '%Y-%m-%d')
     
-    # Se tiver anexo, atualizar em base64
-    if 'anexo_base64' in dados_normalizados and dados_normalizados.get('anexo_base64'):
-        atividade_dados['anexo'] = dados.get('anexo_base64')
+    # Se tiver anexo, salvar o arquivo e armazenar o caminho
+    if 'anexo_base64' in dados and dados.get('anexo_base64'):
+        try:
+            # Extrair os dados do base64
+            anexo_data = dados.get('anexo_base64')
+            # Verificar se contém informações de tipo de arquivo (data:application/pdf;base64,)
+            if ';base64,' in anexo_data:
+                # Extrair o tipo de arquivo e os dados
+                header, encoded = anexo_data.split(';base64,')
+                file_type = header.split(':')[1] if ':' in header else None
+            else:
+                # Assumir que é apenas o conteúdo base64
+                encoded = anexo_data
+                file_type = None
+                
+            # Decodificar o base64
+            file_data = base64.b64decode(encoded)
+            
+            # Determinar a extensão do arquivo com base no tipo
+            extension = None
+            if file_type:
+                if 'pdf' in file_type:
+                    extension = 'pdf'
+                elif 'jpeg' in file_type or 'jpg' in file_type:
+                    extension = 'jpg'
+                elif 'png' in file_type:
+                    extension = 'png'
+                # Adicione mais mapeamentos conforme necessário
+            
+            # Nome do arquivo original (se fornecido)
+            original_filename = dados.get('nome_arquivo', f"anexo.{extension if extension else 'pdf'}")
+            
+            # Salvar o arquivo e obter o caminho
+            attachment_path = save_attachment(file_data, original_filename)
+            
+            if attachment_path:
+                # Armazenar apenas o caminho do arquivo no banco de dados
+                atividade_dados['anexo_path'] = attachment_path
+                # Manter compatibilidade com código existente que possa esperar o campo 'anexo'
+                atividade_dados['anexo'] = 'Arquivo salvo em disco'
+        except Exception as e:
+            print(f"Erro ao processar anexo: {e}")
     
     # Atualizar atividade
     sucesso = atividade_model.atualizar(atividade_id, atividade_dados)
@@ -550,7 +699,74 @@ def listar_atividades_aluno(aluno_id):
         'total_paginas': total_paginas
     }), 200
 
-@atividades_blueprint.route('/<path:atividade_id>', methods=['DELETE'])
+@atividades_blueprint.route('/attachment/<atividade_id>', methods=['GET'])
+@jwt_required()
+def get_attachment(atividade_id):
+    """
+    Retorna o arquivo anexo de uma atividade
+    
+    Args:
+        atividade_id (str): ID da atividade
+    
+    Returns:
+        File: Arquivo anexo ou erro 404 se não encontrado
+    """
+    # O identity é o ID do usuário como string
+    usuario_id = get_jwt_identity()
+    
+    # Obter claims adicionais do token
+    claims = get_jwt()
+    role = claims.get('role')
+    
+    # Buscar atividade
+    atividade_model = Atividade()
+    atividade = atividade_model.buscar_por_id(atividade_id)
+    
+    if not atividade:
+        return jsonify({'erro': 'Atividade não encontrada'}), 404
+    
+    # Verificar permissões
+    if role == 'student' and atividade.get('aluno_id') != usuario_id:
+        return jsonify({'erro': 'Permissão negada. Você só pode acessar anexos de suas próprias atividades'}), 403
+    
+    # Verificar se a atividade tem anexo
+    if 'anexo_path' not in atividade or not atividade.get('anexo_path'):
+        return jsonify({'erro': 'Esta atividade não possui anexo'}), 404
+    
+    # Obter o caminho do anexo
+    attachment_path = atividade.get('anexo_path')
+    
+    # Verificar se é um anexo armazenado no Hetzner ou localmente
+    if attachment_path.startswith('hetzner:'):
+        # Extrair o nome do objeto
+        object_name = attachment_path.replace('hetzner:', '')
+        full_object_name = f"attachments/{object_name}"
+        
+        if storage_manager:
+            # Baixar o arquivo do Hetzner
+            file_data, content_type = storage_manager.download_file(full_object_name)
+            
+            if file_data:
+                # Retornar o arquivo como resposta
+                response = Response(file_data)
+                if content_type:
+                    response.headers['Content-Type'] = content_type
+                response.headers['Content-Disposition'] = f'attachment; filename={object_name}'
+                return response
+            else:
+                return jsonify({'erro': 'Erro ao acessar o anexo no armazenamento em nuvem'}), 500
+        else:
+            return jsonify({'erro': 'Serviço de armazenamento em nuvem não disponível'}), 500
+    else:
+        # Anexo local (remover o prefixo 'local:' se existir)
+        local_filename = attachment_path.replace('local:', '')
+        try:
+            return send_from_directory(ATTACHMENTS_FOLDER, local_filename)
+        except Exception as e:
+            print(f"Erro ao enviar anexo local: {e}")
+            return jsonify({'erro': 'Erro ao acessar o anexo local'}), 500
+
+@atividades_blueprint.route('/deletar/<atividade_id>', methods=['DELETE'])
 @jwt_required()
 def deletar_atividade(atividade_id):
     """

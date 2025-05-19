@@ -1,0 +1,39 @@
+meta {
+  name: Update Activity with Attachment
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{activityWithAttachmentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "Updated Activity with New Attachment",
+    "description": "This activity has been updated with a new attachment",
+    "requested_hours": 15,
+    "anexo_base64": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "nome_arquivo": "updated_image.png"
+  }
+}
+
+script:pre-request {
+  // Check if we have an activity ID with attachment
+  if (!bru.getEnvVar("activityWithAttachmentId")) {
+    console.log("Warning: No activity with attachment ID found. Run 'Create Activity with Attachment' test first.");
+  }
+}
+
+docs {
+  This request updates an existing activity and replaces its attachment with a new one.
+  The example includes a small base64-encoded PNG image.
+  The old attachment file will be replaced with this new one.
+}

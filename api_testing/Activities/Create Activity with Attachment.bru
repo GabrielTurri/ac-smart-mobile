@@ -1,0 +1,36 @@
+meta {
+  name: Create Activity with Attachment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/atividades
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "title": "Activity with Attachment",
+    "description": "This activity includes a document attachment",
+    "requested_hours": 10,
+    "completion_date": "2023-05-01",
+    "student_id": "{{studentId}}",
+    "anexo_base64": "JVBERi0xLjcKJeLjz9MKNSAwIG9iago8PAovRmlsdGVyIC9GbGF0ZURlY29kZQovTGVuZ3RoIDM4Cj4+CnN0cmVhbQp4nCvkMlAwMDDgMjIyNTdSMABCCwMus5ycRIWQgszcVIXixJLSolSuQC4AaQYKZAplbmRzdHJlYW0KZW5kb2JqCjQgMCBvYmoKPDwKL1BhZ2VzIDEgMCBSCi9UeXBlIC9DYXRhbG9nCj4+CmVuZG9iagozIDAgb2JqCjw8Cj4+CmVuZG9iagoyIDAgb2JqCjw8Ci9Db3VudCAxCi9LaWRzIFsxIDAgUl0KL1R5cGUgL1BhZ2VzCj4+CmVuZG9iagoxIDAgb2JqCjw8Ci9Db3VudCAwCi9UeXBlIC9QYWdlcwo+PgplbmRvYmoKeHJlZgowIDYKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMjI4IDAwMDAwIG4gCjAwMDAwMDAxNzMgMDAwMDAgbiAKMDAwMDAwMDE1MiAwMDAwMCBuIAowMDAwMDAwMDk5IDAwMDAwIG4gCjAwMDAwMDAwMTUgMDAwMDAgbiAKdHJhaWxlcgo8PAovUm9vdCA0IDAgUgovU2l6ZSA2Cj4+CnN0YXJ0eHJlZgoyNzUKJSVFT0YK",
+    "nome_arquivo": "sample_document.pdf"
+  }
+}
+
+script:post-response {
+  // Store the created activity ID for subsequent requests
+  if (res.status === 201 && res.body.id) {
+    bru.setEnvVar("activityWithAttachmentId", res.body.id);
+    console.log("Created activity with ID: " + res.body.id);
+  }
+}

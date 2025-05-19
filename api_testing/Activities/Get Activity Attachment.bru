@@ -1,0 +1,27 @@
+meta {
+  name: Get Activity Attachment
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/api/atividades/attachment/{{activityWithAttachmentId}}
+  auth: inherit
+}
+
+headers {
+  Authorization: Bearer {{token}}
+}
+
+script:pre-request {
+  // Check if we have an activity ID with attachment
+  if (!bru.getEnvVar("activityWithAttachmentId")) {
+    console.log("Warning: No activity with attachment ID found. Run 'Create Activity with Attachment' test first.");
+  }
+}
+
+docs {
+  This request retrieves the attachment file for a specific activity.
+  It requires the activity ID that has an attachment.
+  The response will be the actual file content with the appropriate Content-Type header.
+}
