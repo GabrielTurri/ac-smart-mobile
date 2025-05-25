@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/services/atividade_service.dart';
 import 'package:ac_smart/services/service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AtividadeProvider with ChangeNotifier {
@@ -107,48 +105,21 @@ class AtividadeProvider with ChangeNotifier {
   Future<void> incluirAtividade({
     required String titulo,
     required String descricao,
-    required String dataAtividade,
+    required DateTime dataAtividade,
     required int horasSolicitadas,
   }) async {
     final prefs = await SharedPreferences.getInstance();
     Activity novaAtividade = Activity(
-      titulo: descricao,
-      dataAtividade: DateTime.parse(dataAtividade).toIso8601String(),
+      titulo: titulo,
+      dataAtividade: '2025-05-18',
       alunoId: prefs.getString('userId')!,
       descricao: descricao,
       horasSolicitadas: horasSolicitadas,
     );
+    // dataAtividade: formatDateToHttp(dataAtividade),
 
-    String baseUrl = Service().url;
-
-    final url = Uri.parse('$baseUrl/api/atividades/');
-    String token = prefs.getString('token')!;
-    String userId = prefs.getString('userId')!;
-
-    final response = await http.post(
-      url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: json.encode({
-        'title': titulo,
-        'description': descricao,
-        'requested_hours': horasSolicitadas,
-        'completion_date': '2025-05-18',
-        'student_id': userId,
-      }),
-    );
-    if (response.statusCode == 200) {
-      // adicionarAtividade(novaAtividade);
-      notifyListeners();
-      return debugPrint(
-        'Nova atividade cadastrada: \n$novaAtividade \n ${response.body}',
-      );
-    } else {
-      debugPrint(
-          'Erro ao cadastrar atividade: ${response.statusCode} - ${response.body}');
-    }
+    _service.includeAtividade(novaAtividade);
+    notifyListeners();
   }
 
   Future<void> atualizar() {
@@ -164,6 +135,7 @@ class AtividadeProvider with ChangeNotifier {
     // arquivoPath,
     horasSolicitadas,
   }) async {
+    horasSolicitadas = int.tryParse(horasSolicitadas);
     // Activity atividade = _atividades.firstWhere((a) => a.id == id);
     Activity atividade = await _service.fetchAtividade(id);
     if (titulo != null) {

@@ -1,7 +1,7 @@
 import 'package:intl/intl.dart';
 
 String formatDateToHttp(DateTime dateTime) {
-  final DateFormat formatter = DateFormat("y-M-d", 'pt_BR');
+  final DateFormat formatter = DateFormat("y-M-d");
   return formatter.format(dateTime.toUtc());
 }
 

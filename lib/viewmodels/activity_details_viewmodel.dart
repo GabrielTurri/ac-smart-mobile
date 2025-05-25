@@ -7,9 +7,8 @@ class ActivityListItemProvider with ChangeNotifier {
     EditableItem(text: 'Título', field: 'titulo'),
     EditableItem(text: 'Descrição', field: 'descricao'),
     EditableItem(text: 'Anexo', field: 'arquivoPath'),
-    EditableItem(text: 'Status', field: 'status'),
-    EditableItem(text: 'Data da atividade', field: 'dataAtividade'),
     EditableItem(text: 'Horas solicitadas', field: 'horasSolicitadas'),
+    EditableItem(text: 'Data da atividade', field: 'dataAtividade'),
   ];
   // List.generate(
   //   5,

@@ -74,7 +74,7 @@ class AtividadeService {
       },
       body: body,
     );
-    if (response.statusCode == 200) {
+    if (response.statusCode == 201) {
       debugPrint(data['mensagem']);
     } else {
       throw Exception(
@@ -112,6 +112,23 @@ class AtividadeService {
     } else {
       throw Exception(
           'Erro ao alterar atividade: ${response.statusCode}\n ${response.body}.');
+    }
+  }
+
+  Future<void> deleteAtividade(id) async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String token = prefs.getString('token')!;
+    var url = Uri.parse('$baseUrl/api/atividades/$id');
+
+    var response = await http.delete(url, headers: {
+      'Authorization': 'Bearer $token',
+    });
+    if (response.statusCode == 200) {
+      debugPrint(response.body);
+    } else {
+      throw Exception(
+          'Erro ao excluir atividade: ${response.statusCode}\n ${response.body}.');
     }
   }
 }

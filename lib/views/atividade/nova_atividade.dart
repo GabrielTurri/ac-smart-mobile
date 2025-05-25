@@ -109,7 +109,7 @@ class InserirAtividade extends StatelessWidget {
                       titulo: _tituloController.text,
                       descricao: _descricaoController.text,
                       horasSolicitadas: horasSolicitadas,
-                      dataAtividade: '2025-05-01',
+                      dataAtividade: DateTime(2025, 01, 01),
                     );
                   } else {
                     // Exibir mensagem de erro
