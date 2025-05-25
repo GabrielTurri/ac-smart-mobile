@@ -1,10 +1,24 @@
-import 'dart:io';
+import 'package:intl/intl.dart';
+
+String formatDateToHttp(DateTime dateTime) {
+  final DateFormat formatter = DateFormat("y-M-d", 'pt_BR');
+  return formatter.format(dateTime.toUtc());
+}
+
+String formatHttpDate(String httpDate) {
+  final DateFormat inputFormat =
+      DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", 'en_US');
+  final DateFormat outputFormat = DateFormat('yyyy-MM-dd');
+
+  DateTime parsedDate = inputFormat.parseUtc(httpDate);
+  return outputFormat.format(parsedDate);
+}
 
 class Activity {
   String? id;
   String alunoId;
-  DateTime dataEntrega;
-  DateTime dataAtividade;
+  String dataEntrega;
+  String dataAtividade;
   String titulo;
   String descricao;
   // String arquivoPath;
@@ -20,16 +34,16 @@ class Activity {
     required this.descricao,
     required this.horasSolicitadas,
     this.horasAprovadas = 0,
-    DateTime? dataEntrega,
+    String? dataEntrega,
     this.status = '',
-  }) : dataEntrega = dataEntrega ?? DateTime.now();
+  }) : dataEntrega = dataEntrega ?? formatDateToHttp(DateTime.now());
 
   factory Activity.fromJson(Map<String, dynamic> json) {
     return Activity(
       id: json['_id'],
       alunoId: json['aluno_id'],
-      dataAtividade: HttpDate.parse(json['data']),
-      dataEntrega: HttpDate.parse(json['data_criacao']),
+      dataAtividade: formatHttpDate(json['data']),
+      dataEntrega: formatHttpDate(json['data_criacao']),
       descricao: json['descricao'],
       horasAprovadas: json['horas_aprovadas'],
       horasSolicitadas: json['horas_solicitadas'],

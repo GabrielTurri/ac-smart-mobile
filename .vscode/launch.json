@@ -7,7 +7,12 @@
     {
       "name": "ac_smart",
       "request": "launch",
-      "type": "dart"
+      "type": "dart",
+     "args": [
+      "--no-enable-impeller"
+     ] 
+     
+      
     },
     {
       "name": "ac_smart (profile mode)",

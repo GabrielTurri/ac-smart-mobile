@@ -218,7 +218,7 @@ class EditarAtividade extends StatelessWidget {
                             onEditingComplete: () => provider.saveEditing(
                                 5, atividade.id!, dataAtividadeController.text),
                           )
-                        : Text('${atividade.dataAtividade.toLocal()}'),
+                        : Text(atividade.dataAtividade),
                     onTap: () {
                       if (!provider.items[5].isEditing) {
                         provider.startEditing(5);

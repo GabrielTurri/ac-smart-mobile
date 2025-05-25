@@ -51,13 +51,43 @@ class AtividadeService {
     }
   }
 
+  Future<void> includeAtividade(Activity atividade) async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String token = prefs.getString('token')!;
+    var url = Uri.parse('$baseUrl/api/atividades/');
+
+    Map data = {
+      'title': atividade.titulo,
+      'description': atividade.descricao,
+      'requested_hours': atividade.horasSolicitadas,
+      'completion_date': atividade.dataAtividade,
+      'student_id': prefs.getString('userId')
+    };
+    var body = json.encode(data);
+
+    var response = await http.post(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      debugPrint(data['mensagem']);
+    } else {
+      throw Exception(
+          'Erro ao incluir atividade: ${response.statusCode}\n ${response.body}.');
+    }
+  }
+
   Future<void> updateAtividade(Activity atividade) async {
     var prefs = await SharedPreferences.getInstance();
 
     String token = prefs.getString('token')!;
     var url = Uri.parse('$baseUrl/api/atividades/${atividade.id}');
-
-    atividade.dataAtividade = atividade.dataAtividade.toIso8601String();
+    atividade.dataAtividade = atividade.dataAtividade;
 
     Map data = {
       'title': atividade.titulo,

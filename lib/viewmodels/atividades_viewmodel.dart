@@ -113,7 +113,7 @@ class AtividadeProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     Activity novaAtividade = Activity(
       titulo: descricao,
-      dataAtividade: DateTime.parse(dataAtividade),
+      dataAtividade: DateTime.parse(dataAtividade).toIso8601String(),
       alunoId: prefs.getString('userId')!,
       descricao: descricao,
       horasSolicitadas: horasSolicitadas,
