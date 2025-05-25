@@ -57,6 +57,8 @@ class AtividadeService {
     String token = prefs.getString('token')!;
     var url = Uri.parse('$baseUrl/api/atividades/${atividade.id}');
 
+    atividade.dataAtividade = atividade.dataAtividade.toIso8601String();
+
     Map data = {
       'title': atividade.titulo,
       'description': atividade.descricao,
