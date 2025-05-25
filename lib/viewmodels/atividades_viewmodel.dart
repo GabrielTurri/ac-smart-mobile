@@ -27,6 +27,7 @@ class AtividadeProvider with ChangeNotifier {
 
     try {
       _atividades = await _service.fetchAtividades();
+      debugPrint('$_atividades');
     } catch (e) {
       debugPrint('Erro ao carregar atividades: $e');
       _atividades = [];
@@ -37,7 +38,7 @@ class AtividadeProvider with ChangeNotifier {
   }
 
   Future<void> consultarAtividade(id) async {
-    Activity atividade = await _service.fetchAtividade(id);
+    // Activity atividade = await _service.fetchAtividade(id);
     // atividadeConsultada = atividade;
     notifyListeners();
   }
@@ -150,36 +151,24 @@ class AtividadeProvider with ChangeNotifier {
     }
   }
 
-  // void adicionarAtividade(Activity atividade) {
-  //   _atividades.add(atividade);
-  //   notifyListeners();
-  // }
-
   Future<void> atualizar() {
     carregarAtividades();
     return Future.delayed(const Duration(seconds: 3));
   }
 
-  void alterarAtividade({
+  Future<void> alterarAtividade({
     required id,
+    titulo,
     descricao,
-    statusSelecionado,
     dataSelecionada,
-    arquivoPath,
+    // arquivoPath,
     horasSolicitadas,
-  }) {
-    // int index = atividades.indexWhere((a) => a.id == id);
-    // if (index >= 0) {
-    //   atividades[index] = Activity(
-    //     titulo: descricao,
-    //     dataAtividade: dataSelecionada,
-    //     arquivoPath: arquivoPath,
-    //     status: statusSelecionado,
-    //     horasSolicitadas: horasSolicitadas,
-    //   );
-    // }
-    Activity atividade = atividades.firstWhere((a) => a.id == id);
-
+  }) async {
+    // Activity atividade = _atividades.firstWhere((a) => a.id == id);
+    Activity atividade = await _service.fetchAtividade(id);
+    if (titulo != null) {
+      atividade.titulo = titulo;
+    }
     if (descricao != null) {
       atividade.descricao = descricao;
     }
@@ -189,28 +178,6 @@ class AtividadeProvider with ChangeNotifier {
     if (horasSolicitadas != null) {
       atividade.horasSolicitadas = horasSolicitadas;
     }
+    _service.updateAtividade(atividade);
   }
-}
-
-Future<void> alterarAtividade({
-  required id,
-  required descricao,
-  required statusSelecionado,
-  required dataAtividade,
-  required arquivoPath,
-  required horasSolicitadas,
-}) async {
-  final prefs = await SharedPreferences.getInstance();
-
-  Activity novaAtividade = Activity(
-    id: id,
-    titulo: descricao,
-    dataAtividade: dataAtividade,
-    alunoId: prefs.getString('userId')!,
-    descricao: '',
-    horasSolicitadas: horasSolicitadas,
-  );
-  // AtividadeProvider().adicionarAtividade(novaAtividade);
-
-  return debugPrint('Nova atividade cadastrada: \n$novaAtividade');
 }

@@ -42,12 +42,44 @@ class AtividadeService {
       final data = jsonDecode(response.body);
 
       final Map<String, dynamic> atividadeJson = data['atividade'];
-      var atividades = data['atividades'];
-      debugPrint('Atividades: $atividades.');
+
+      debugPrint('Atividade: $atividadeJson.');
       return Activity.fromJson(atividadeJson);
     } else {
       throw Exception(
-          'Erro ao consultar atividades: ${response.statusCode}\n ${response.body}.');
+          'Erro ao consultar atividade: ${response.statusCode}\n ${response.body}.');
+    }
+  }
+
+  Future<void> updateAtividade(Activity atividade) async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String token = prefs.getString('token')!;
+    var url = Uri.parse('$baseUrl/api/atividades/${atividade.id}');
+
+    Map data = {
+      'title': atividade.titulo,
+      'description': atividade.descricao,
+      'requested_hours': atividade.horasSolicitadas,
+      'data': atividade.dataAtividade,
+    };
+    var body = json.encode(data);
+
+    var response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+
+      debugPrint(data['mensagem']);
+    } else {
+      throw Exception(
+          'Erro ao alterar atividade: ${response.statusCode}\n ${response.body}.');
     }
   }
 }
