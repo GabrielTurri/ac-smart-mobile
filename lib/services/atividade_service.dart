@@ -41,7 +41,7 @@ class AtividadeService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
 
-      final Map<String, dynamic> atividadeJson = data['Atividade'];
+      final Map<String, dynamic> atividadeJson = data['atividade'];
       var atividades = data['atividades'];
       debugPrint('Atividades: $atividades.');
       return Activity.fromJson(atividadeJson);

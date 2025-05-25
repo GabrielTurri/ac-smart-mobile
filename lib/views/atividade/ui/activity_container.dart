@@ -103,9 +103,11 @@ class ActivityTile extends StatelessWidget {
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            atividade.titulo,
-            style: const TextStyle(fontSize: 16),
+          Expanded(
+            child: Text(
+              atividade.titulo,
+              style: const TextStyle(fontSize: 16),
+            ),
           ),
           Text('${atividade.horasSolicitadas}H'),
         ],

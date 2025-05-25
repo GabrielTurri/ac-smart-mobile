@@ -172,7 +172,66 @@ class EditarAtividade extends StatelessWidget {
                               atividade.status = statusController.text;
                               provider.items[3].isEditing = false;
                               provider.saveEditing(
-                                  2, atividade.id!, statusController.text);
+                                  3, atividade.id!, statusController.text);
+                            },
+                          )
+                        : const Icon(Icons.edit),
+                  ),
+                  ListTile(
+                    title: const Text('Horas solicitadas'),
+                    subtitle: provider.items[4].isEditing
+                        ? TextField(
+                            controller: horasSolicitadasController,
+                            autofocus: true,
+                            onSubmitted: (newValue) => provider.saveEditing(
+                                4, atividade.id!, newValue),
+                            onEditingComplete: () => provider.saveEditing(4,
+                                atividade.id!, horasSolicitadasController.text),
+                          )
+                        : Text('${atividade.horasSolicitadas}'),
+                    onTap: () {
+                      if (!provider.items[4].isEditing) {
+                        provider.startEditing(4);
+                      }
+                    },
+                    trailing: provider.items[4].isEditing
+                        ? IconButton(
+                            icon: const Icon(Icons.check),
+                            onPressed: () {
+                              atividade.horasSolicitadas =
+                                  int.parse(horasSolicitadasController.text);
+                              provider.items[4].isEditing = false;
+                              provider.saveEditing(4, atividade.id!,
+                                  horasSolicitadasController.text);
+                            },
+                          )
+                        : const Icon(Icons.edit),
+                  ),
+                  ListTile(
+                    title: const Text('Data da Atividade'),
+                    subtitle: provider.items[5].isEditing
+                        ? TextField(
+                            controller: dataAtividadeController,
+                            autofocus: true,
+                            onSubmitted: (newValue) => provider.saveEditing(
+                                5, atividade.id!, newValue),
+                            onEditingComplete: () => provider.saveEditing(
+                                5, atividade.id!, dataAtividadeController.text),
+                          )
+                        : Text('${atividade.dataAtividade.toLocal()}'),
+                    onTap: () {
+                      if (!provider.items[5].isEditing) {
+                        provider.startEditing(5);
+                      }
+                    },
+                    trailing: provider.items[5].isEditing
+                        ? IconButton(
+                            icon: const Icon(Icons.check),
+                            onPressed: () {
+                              atividade.status = dataAtividadeController.text;
+                              provider.items[5].isEditing = false;
+                              provider.saveEditing(5, atividade.id!,
+                                  dataAtividadeController.text);
                             },
                           )
                         : const Icon(Icons.edit),
