@@ -767,6 +767,7 @@ def get_attachment(atividade_id):
             return jsonify({'erro': 'Erro ao acessar o anexo local'}), 500
 
 @atividades_blueprint.route('/deletar/<atividade_id>', methods=['DELETE'])
+@atividades_blueprint.route('/<atividade_id>', methods=['DELETE'])
 @jwt_required()
 def deletar_atividade(atividade_id):
     """
