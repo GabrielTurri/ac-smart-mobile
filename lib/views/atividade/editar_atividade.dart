@@ -1,6 +1,8 @@
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/viewmodels/activity_details_viewmodel.dart';
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class EditarAtividade extends StatelessWidget {
@@ -13,9 +15,8 @@ class EditarAtividade extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Activity atividade = context.extra as Activity;
-    // Activity atividade = context.watch<AtividadeProvider>().atividadeConsultada;
-    // final itemAtividade = context.read<AtividadeProvider>();
+    // ActivityListItemProvider atividadeProvider =
+    //     context.read<ActivityListItemProvider>();
 
     final bool isEditable = (atividade.status == 'Aprovada') ? false : true;
     return ChangeNotifierProvider(
@@ -34,7 +35,16 @@ class EditarAtividade extends StatelessWidget {
 
                   [
                 IconButton(
-                  onPressed: (atividade.status == 'Aprovada') ? null : () {},
+                  onPressed: (atividade.status == 'Aprovada')
+                      ? null
+                      : () {
+                          ActivityListItemProvider()
+                              .deletarAtividade(atividade.id);
+                          context.pop();
+                          // const SnackBar(
+                          //   content: Text('Atividade excluída com sucesso'),
+                          // );
+                        },
                   icon: const Icon(Icons.delete),
                   color: Colors.white,
                 )

@@ -1,8 +1,10 @@
+import 'package:ac_smart/services/atividade_service.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/models/list_item_model.dart';
 
 class ActivityListItemProvider with ChangeNotifier {
+  final _service = AtividadeService();
   final List<EditableItem> _items = [
     EditableItem(text: 'Título', field: 'titulo'),
     EditableItem(text: 'Descrição', field: 'descricao'),
@@ -43,6 +45,11 @@ class ActivityListItemProvider with ChangeNotifier {
         break;
     }
     _items[index].isEditing = false;
+    notifyListeners();
+  }
+
+  void deletarAtividade(id) {
+    _service.deleteAtividade(id);
     notifyListeners();
   }
 }
