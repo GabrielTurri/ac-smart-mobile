@@ -131,4 +131,27 @@ class AtividadeService {
           'Erro ao excluir atividade: ${response.statusCode}\n ${response.body}.');
     }
   }
+
+  Future<void> rejectAtividade({
+    required id,
+    required String observation,
+  }) async {
+    var prefs = await SharedPreferences.getInstance();
+
+    String token = prefs.getString('token')!;
+    var url = Uri.parse('$baseUrl/api/atividades/$id/reject');
+
+    var response = await http.put(url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({"observation": observation}));
+    if (response.statusCode == 200) {
+      debugPrint(response.body);
+    } else {
+      throw Exception(
+          'Erro ao rejeitar atividade: ${response.statusCode}\n ${response.body}.');
+    }
+  }
 }

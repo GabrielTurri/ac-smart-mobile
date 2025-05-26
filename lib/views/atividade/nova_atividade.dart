@@ -1,10 +1,5 @@
-// import 'package:ac_smart/models/activity.dart';
-
-import 'package:ac_smart/views/atividade/editar_atividade.dart';
 import 'package:ac_smart/views/atividade/ui/app_bar.dart';
-
 import 'package:provider/provider.dart';
-
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
@@ -14,13 +9,12 @@ class InserirAtividade extends StatelessWidget {
   final _descricaoController = TextEditingController();
   final _tituloController = TextEditingController();
   final _horasSolicitadasController = TextEditingController();
-  String? _anexo;
-  DateTime? _data;
+  // String? _anexo;
+  // DateTime? _data;
 
   @override
   Widget build(BuildContext context) {
     final atividadeProvider = context.read<AtividadeProvider>();
-    final watchAtividadeProvider = context.watch<AtividadeProvider>();
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Inserir Nova Atividade'),
       body: Container(
@@ -43,13 +37,13 @@ class InserirAtividade extends StatelessWidget {
                     decoration: const InputDecoration(
                         labelText: 'Descrição', border: OutlineInputBorder()),
                   ),
-                  ElevatedButton(
-                    onPressed: atividadeProvider.selecionarArquivo,
-                    child: const Text('Selecionar Anexo'),
-                  ),
-                  Text(_anexo != null
-                      ? 'Anexo: $_anexo'
-                      : 'Nenhum anexo selecionado'),
+                  // ElevatedButton(
+                  //   onPressed: atividadeProvider.selecionarArquivo,
+                  //   child: const Text('Selecionar Anexo'),
+                  // ),
+                  // Text(_anexo != null
+                  //     ? 'Anexo: $_anexo'
+                  //     : 'Nenhum anexo selecionado'),
                   TextField(
                     controller: _horasSolicitadasController,
                     keyboardType: const TextInputType.numberWithOptions(),
@@ -58,38 +52,19 @@ class InserirAtividade extends StatelessWidget {
                         border: OutlineInputBorder()),
                   ),
                   CalendarioInput(DateTime.now()),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(_data != null
-                          ? 'Data: ${_data!.toLocal()}'.split(' ')[0]
-                          : 'Nenhuma data selecionada'),
-                      ElevatedButton(
-                        onPressed: () =>
-                            atividadeProvider.selecionarData(context),
-                        child: const Text('Selecionar Data'),
-                      ),
-                    ],
-                  ),
-                  const Divider(),
-                  DropdownButton<String>(
-                    padding: const EdgeInsets.all(8),
-                    hint: const Text('Selecione o Status'),
-                    value: watchAtividadeProvider.statusSelecionado,
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        atividadeProvider.selecionarStatus(
-                            statusSelecionado: newValue);
-                      }
-                    },
-                    items: <String>['Reprovada', 'Pendente', 'Aprovada']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  //   children: [
+                  //     Text(_data != null
+                  //         ? 'Data: ${_data!.toLocal()}'.split(' ')[0]
+                  //         : 'Nenhuma data selecionada'),
+                  //     ElevatedButton(
+                  //       onPressed: () =>
+                  //           atividadeProvider.selecionarData(context),
+                  //       child: const Text('Selecionar Data'),
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
@@ -102,8 +77,8 @@ class InserirAtividade extends StatelessWidget {
 
                   if (_descricaoController.text.isNotEmpty &&
                       horasSolicitadas != 0) {
-                    _anexo = 'path';
-                    _data = DateTime.now();
+                    // _anexo = 'path';
+                    // _data = DateTime.now();
 
                     atividadeProvider.incluirAtividade(
                       titulo: _tituloController.text,
