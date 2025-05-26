@@ -41,9 +41,13 @@ class EditarAtividade extends StatelessWidget {
                           ActivityListItemProvider()
                               .deletarAtividade(atividade.id);
                           context.pop();
-                          // const SnackBar(
-                          //   content: Text('Atividade excluída com sucesso'),
-                          // );
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                  content:
+                                      Text('Atividade excluída com sucesso!')));
+                          context
+                              .read<AtividadeProvider>()
+                              .carregarAtividades();
                         },
                   icon: const Icon(Icons.delete),
                   color: Colors.white,
@@ -229,24 +233,23 @@ class EditarAtividade extends StatelessWidget {
               );
             } else {
               return Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  Center(
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('Status: '),
-                        Text(
-                          atividade.status,
-                          style: const TextStyle(color: Colors.green),
-                        ),
-                      ],
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('Status: '),
+                          Text(
+                            atividade.status,
+                            style: const TextStyle(color: Colors.green),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  Expanded(
-                    child: ListView(
-                      children: [
+                    Expanded(
+                      child: ListView(children: [
                         ListTile(
                           title: const Text('Título'),
                           subtitle: Text(atividade.titulo),
@@ -261,17 +264,28 @@ class EditarAtividade extends StatelessWidget {
                         ),
                         ListTile(
                           title: const Text('Data da atividade'),
-                          subtitle: Text('${atividade.dataAtividade}'),
+                          subtitle: Text(atividade.dataAtividade),
                         ),
                         ListTile(
                           title: const Text('Horas Solicitadas'),
                           subtitle: Text('${atividade.horasSolicitadas}'),
                         ),
-                      ],
+                      ]),
                     ),
-                  ),
-                ],
-              );
+                    if (atividade.status == 'Reprovado')
+                      Column(
+                        children: [
+                          const Text('Observação do professor:',
+                              textAlign: TextAlign.center),
+                          Text(
+                            atividade.observacao,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: Colors.red, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                  ]);
             }
           })),
     );

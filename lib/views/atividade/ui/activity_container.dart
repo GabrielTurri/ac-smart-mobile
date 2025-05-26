@@ -32,8 +32,8 @@ class _ActivityListState extends State<ActivityList> {
     final atividadeProvider = context.read<AtividadeProvider>();
 
     final listaAtividades = (widget.isReproved)
-        ? atividades.where((a) => a.status == "Reprovada").toList()
-        : atividades.where((a) => a.status != "Reprovada").toList();
+        ? atividades.where((a) => a.status == "Reprovado").toList()
+        : atividades.where((a) => a.status != "Reprovado").toList();
 
     return RefreshIndicator(
       onRefresh: () => atividadeProvider.atualizar(),
@@ -91,9 +91,6 @@ class ActivityTile extends StatelessWidget {
     return ListTile(
       leading: tileIcon,
       onTap: () {
-        context.read<AtividadeProvider>().consultarAtividade(atividade.id);
-        // final atividadeConsultada =
-        //     await provider.consultarAtividade(atividade);
         if (context.mounted) {
           context.push('/activities/details', extra: atividade);
         }
@@ -132,7 +129,10 @@ class ReprovedActivityTile extends StatelessWidget {
         Icons.cancel,
         color: Colors.red,
       ),
-      onTap: () => context.push('/activities/${atividade.id}'),
+      onTap: () => {
+        if (context.mounted)
+          {context.push('/activities/details', extra: atividade)}
+      },
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [

@@ -25,6 +25,7 @@ class Activity {
   int horasSolicitadas;
   int horasAprovadas;
   String status;
+  String observacao = '';
 
   Activity({
     this.id,
@@ -35,6 +36,7 @@ class Activity {
     required this.horasSolicitadas,
     this.horasAprovadas = 0,
     String? dataEntrega,
+    String? observacao,
     this.status = '',
   }) : dataEntrega = dataEntrega ?? formatDateToHttp(DateTime.now());
 

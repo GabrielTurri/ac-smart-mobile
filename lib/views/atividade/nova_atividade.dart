@@ -1,4 +1,5 @@
 import 'package:ac_smart/views/atividade/ui/app_bar.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -86,6 +87,10 @@ class InserirAtividade extends StatelessWidget {
                       horasSolicitadas: horasSolicitadas,
                       dataAtividade: DateTime(2025, 01, 01),
                     );
+                    context.pop();
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                        content: Text('Atividade enviada com sucesso!')));
+                    atividadeProvider.carregarAtividades();
                   } else {
                     // Exibir mensagem de erro
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(

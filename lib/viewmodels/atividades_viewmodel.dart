@@ -35,12 +35,6 @@ class AtividadeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> consultarAtividade(id) async {
-    // Activity atividade = await _service.fetchAtividade(id);
-    // atividadeConsultada = atividade;
-    notifyListeners();
-  }
-
   Future<void> selecionarArquivo({String arquivoPath = ''}) async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -124,7 +118,7 @@ class AtividadeProvider with ChangeNotifier {
 
   Future<void> atualizar() {
     carregarAtividades();
-    return Future.delayed(const Duration(seconds: 3));
+    return Future.delayed(const Duration(seconds: 1));
   }
 
   Future<void> alterarAtividade({
@@ -135,7 +129,6 @@ class AtividadeProvider with ChangeNotifier {
     // arquivoPath,
     horasSolicitadas,
   }) async {
-    horasSolicitadas = int.tryParse(horasSolicitadas);
     // Activity atividade = _atividades.firstWhere((a) => a.id == id);
     Activity atividade = await _service.fetchAtividade(id);
     if (titulo != null) {
@@ -148,8 +141,15 @@ class AtividadeProvider with ChangeNotifier {
       atividade.dataAtividade = dataSelecionada;
     }
     if (horasSolicitadas != null) {
+      horasSolicitadas = int.tryParse(horasSolicitadas) ?? 0;
       atividade.horasSolicitadas = horasSolicitadas;
     }
     _service.updateAtividade(atividade);
+
+    int indexAtividade = _atividades.indexWhere((a) => a.id == id);
+    if (indexAtividade != -1) {
+      _atividades[indexAtividade] = atividade;
+    }
+    notifyListeners();
   }
 }
