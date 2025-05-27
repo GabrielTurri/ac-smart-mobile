@@ -1,0 +1,25 @@
+meta {
+  name: Rectify Rejected Activity
+  type: http
+  seq: 8
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}/retificar
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "titulo": "Atividade Retificada",
+    "descricao": "Descrição atualizada com as correções solicitadas",
+    "horas_solicitadas": 10,
+    "comentario_retificacao": "Adicionei o certificado correto e ajustei a carga horária conforme solicitado."
+  }
+}

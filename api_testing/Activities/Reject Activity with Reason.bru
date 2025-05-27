@@ -1,0 +1,23 @@
+meta {
+  name: Reject Activity with Reason
+  type: http
+  seq: 7
+}
+
+put {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}/reject
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {
+    "motivo_recusa": "Documentação incompleta. Favor anexar comprovante de participação.",
+    "observation": "A carga horária informada não corresponde ao certificado."
+  }
+}

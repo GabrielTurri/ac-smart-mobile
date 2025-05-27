@@ -1,0 +1,15 @@
+meta {
+  name: Delete Rejected Activity
+  type: http
+  seq: 9
+}
+
+delete {
+  url: {{baseUrl}}/api/atividades/{{newActivityId}}
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
