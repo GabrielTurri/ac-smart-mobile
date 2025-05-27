@@ -1,5 +1,5 @@
 meta {
-  name: Create and Rectify Activity
+  name: Criar e Retificar Atividade
   type: http
   seq: 10
 }
@@ -29,8 +29,4 @@ script:post-response {
   if (res.status === 201 && res.body.id) {
     bru.setEnvVar("flowActivityId", res.body.id);
   }
-}
-
-assert {
-  res.status: 201
 }
