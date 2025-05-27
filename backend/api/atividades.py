@@ -326,11 +326,16 @@ def atualizar_atividade(atividade_id):
     
     # Verificar permissões
     if role == 'student':
-        # Aluno só pode editar atividades dele e que estejam pendentes
+        # Aluno só pode editar atividades dele e que estejam pendentes ou reprovadas
         if atividade.get('aluno_id') != usuario_id:
             return jsonify({'erro': 'Permissão negada. Você só pode editar suas próprias atividades'}), 403
-        if atividade.get('status') != 'Pendente':
-            return jsonify({'erro': 'Apenas atividades pendentes podem ser editadas'}), 400
+        if atividade.get('status') not in ['Pendente', 'Reprovado']:
+            return jsonify({'erro': 'Apenas atividades pendentes ou reprovadas podem ser editadas'}), 400
+        
+        # Se estiver editando uma atividade reprovada, marcar como retificada
+        if atividade.get('status') == 'Reprovado':
+            atividade_dados['status'] = 'Pendente'  # Volta para pendente
+            atividade_dados['retificada'] = True    # Marca como retificada
     
     dados = request.get_json()
     
@@ -492,7 +497,8 @@ def rejeitar_atividade(atividade_id):
         atividade_id (str): ID da atividade
     
     Request:
-        - observation: Observação sobre a rejeição (opcional)
+        - motivo_recusa: Motivo da rejeição (obrigatório)
+        - observation: Observação adicional sobre a rejeição (opcional)
     
     Returns:
         - mensagem: Mensagem de sucesso
@@ -517,10 +523,16 @@ def rejeitar_atividade(atividade_id):
     
     dados = request.get_json()
     
+    # Verificar se o motivo da recusa foi fornecido
+    if 'motivo_recusa' not in dados or not dados.get('motivo_recusa'):
+        return jsonify({'erro': 'O motivo da recusa é obrigatório'}), 400
+    
     # Preparar dados para atualização
     atividade_dados = {
         'status': 'Reprovado',
-        'horas_aprovadas': 0
+        'horas_aprovadas': 0,
+        'motivo_recusa': dados.get('motivo_recusa'),
+        'requer_retificacao': True
     }
     
     # Adicionar observação se fornecida
@@ -534,7 +546,8 @@ def rejeitar_atividade(atividade_id):
         return jsonify({'erro': 'Erro ao rejeitar atividade'}), 500
     
     return jsonify({
-        'mensagem': 'Atividade rejeitada com sucesso'
+        'mensagem': 'Atividade rejeitada com sucesso',
+        'motivo_recusa': dados.get('motivo_recusa')
     }), 200
 
 @atividades_blueprint.route('/<atividade_id>/status', methods=['PUT'])
@@ -767,6 +780,128 @@ def get_attachment(atividade_id):
             return jsonify({'erro': 'Erro ao acessar o anexo local'}), 500
 
 @atividades_blueprint.route('/deletar/<atividade_id>', methods=['DELETE'])
+@atividades_blueprint.route('/<atividade_id>/retificar', methods=['PUT'])
+@jwt_required()
+def retificar_atividade(atividade_id):
+    """
+    Permite que um aluno retifique uma atividade que foi reprovada
+    
+    Args:
+        atividade_id (str): ID da atividade
+    
+    Request:
+        - titulo: Novo título da atividade (opcional)
+        - descricao: Nova descrição da atividade (opcional)
+        - horas_solicitadas: Novas horas solicitadas (opcional)
+        - data: Nova data da atividade (formato: YYYY-MM-DD) (opcional)
+        - anexo_base64: Novo arquivo anexo em formato base64 (opcional)
+        - comentario_retificacao: Comentário do aluno sobre a retificação (opcional)
+    
+    Returns:
+        - mensagem: Mensagem de sucesso
+        - atividade: Dados da atividade retificada
+    """
+    # O identity é o ID do usuário como string
+    usuario_id = get_jwt_identity()
+    
+    # Obter claims adicionais do token
+    claims = get_jwt()
+    role = claims.get('role')
+    
+    # Verificar se é aluno
+    if role != 'student':
+        return jsonify({'erro': 'Apenas alunos podem retificar atividades'}), 403
+    
+    # Buscar atividade
+    atividade_model = Atividade()
+    atividade = atividade_model.buscar_por_id(atividade_id)
+    
+    if not atividade:
+        return jsonify({'erro': 'Atividade não encontrada'}), 404
+    
+    # Verificar se a atividade pertence ao aluno
+    if atividade.get('aluno_id') != usuario_id:
+        return jsonify({'erro': 'Permissão negada. Você só pode retificar suas próprias atividades'}), 403
+    
+    # Verificar se a atividade está reprovada
+    if atividade.get('status') != 'Reprovado':
+        return jsonify({'erro': 'Apenas atividades reprovadas podem ser retificadas'}), 400
+    
+    dados = request.get_json()
+    
+    # Preparar dados para atualização
+    atividade_dados = {
+        'status': 'Pendente',  # Volta para pendente após retificação
+        'retificada': True,
+        'data_retificacao': datetime.now().isoformat()
+    }
+    
+    # Atualizar campos se fornecidos
+    if 'titulo' in dados:
+        atividade_dados['titulo'] = dados.get('titulo')
+    
+    if 'descricao' in dados:
+        atividade_dados['descricao'] = dados.get('descricao')
+    
+    if 'horas_solicitadas' in dados:
+        atividade_dados['horas_solicitadas'] = dados.get('horas_solicitadas')
+    
+    if 'data' in dados:
+        atividade_dados['data'] = dados.get('data')
+    
+    if 'comentario_retificacao' in dados:
+        atividade_dados['comentario_retificacao'] = dados.get('comentario_retificacao')
+    
+    # Processar novo anexo se fornecido
+    if 'anexo_base64' in dados and dados.get('anexo_base64'):
+        try:
+            # Extrair dados do base64
+            anexo_data = dados.get('anexo_base64')
+            content_type = None
+            original_filename = None
+            
+            # Verificar se temos metadados do anexo
+            if 'content_type' in dados:
+                content_type = dados.get('content_type')
+            if 'filename' in dados:
+                original_filename = dados.get('filename')
+            
+            # Decodificar base64
+            if ',' in anexo_data:
+                # Formato: data:application/pdf;base64,XXXXXXX
+                header, anexo_data = anexo_data.split(',', 1)
+                if ';base64' in header:
+                    if not content_type and 'data:' in header:
+                        content_type = header.split('data:')[1].split(';')[0]
+            
+            file_data = base64.b64decode(anexo_data)
+            
+            # Salvar anexo
+            anexo_path = save_attachment(file_data, original_filename, content_type)
+            
+            if anexo_path:
+                atividade_dados['anexo'] = anexo_path
+            else:
+                return jsonify({'erro': 'Erro ao salvar anexo'}), 500
+        except Exception as e:
+            print(f"Erro ao processar anexo: {e}")
+            return jsonify({'erro': f'Erro ao processar anexo: {str(e)}'}), 400
+    
+    # Atualizar atividade
+    sucesso = atividade_model.atualizar(atividade_id, atividade_dados)
+    
+    if not sucesso:
+        return jsonify({'erro': 'Erro ao retificar atividade'}), 500
+    
+    # Buscar atividade atualizada
+    atividade_atualizada = atividade_model.buscar_por_id(atividade_id)
+    
+    return jsonify({
+        'mensagem': 'Atividade retificada com sucesso. Aguardando nova avaliação.',
+        'atividade': atividade_atualizada
+    }), 200
+
+@atividades_blueprint.route('/deletar/<atividade_id>', methods=['DELETE'])
 @atividades_blueprint.route('/<atividade_id>', methods=['DELETE'])
 @jwt_required()
 def deletar_atividade(atividade_id):
@@ -800,11 +935,11 @@ def deletar_atividade(atividade_id):
     
     # Verificar permissões
     if role == 'student':
-        # Aluno só pode remover atividades dele e que estejam pendentes
+        # Aluno só pode remover atividades dele e que estejam pendentes ou reprovadas
         if atividade.get('aluno_id') != usuario_id:
             return jsonify({'erro': 'Permissão negada. Você só pode remover suas próprias atividades'}), 403
-        if atividade.get('status') != 'Pendente':
-            return jsonify({'erro': 'Apenas atividades pendentes podem ser removidas'}), 400
+        if atividade.get('status') not in ['Pendente', 'Reprovado']:
+            return jsonify({'erro': 'Apenas atividades pendentes ou reprovadas podem ser removidas'}), 400
     
     # Deletar atividade
     sucesso = atividade_model.deletar(atividade_id)

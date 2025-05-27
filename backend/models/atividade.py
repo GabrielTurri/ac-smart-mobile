@@ -150,6 +150,29 @@ class Atividade:
             # Adicionar data de atualização
             dados_atualizados['data_atualizacao'] = datetime.now()
             
+            # Se a atividade está sendo retificada, registrar histórico
+            atividade_atual = self.buscar_por_id(atividade_id)
+            if atividade_atual and atividade_atual.get('status') == 'Reprovado' and 'status' in dados_atualizados and dados_atualizados['status'] == 'Pendente':
+                # Estamos retificando uma atividade reprovada
+                dados_atualizados['retificada'] = True
+                dados_atualizados['data_retificacao'] = datetime.now()
+                
+                # Registrar histórico da retificação
+                if 'historico' not in atividade_atual:
+                    atividade_atual['historico'] = []
+                
+                historico_item = {
+                    'status_anterior': atividade_atual.get('status'),
+                    'data': datetime.now(),
+                    'acao': 'retificacao'
+                }
+                
+                # Atualizar o histórico
+                self.collection.update_one(
+                    {"_id": ObjectId(atividade_id)},
+                    {"$push": {"historico": historico_item}}
+                )
+            
             resultado = self.collection.update_one(
                 {"_id": ObjectId(atividade_id)},
                 {"$set": dados_atualizados}
