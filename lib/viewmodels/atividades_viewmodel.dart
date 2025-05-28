@@ -22,28 +22,39 @@ class AtividadeProvider with ChangeNotifier {
 
   Future<void> carregarAtividades() async {
     _carregando = true;
-
     try {
+      debugPrint('Iniciando carregamento de atividades...');
+      var prefs = await SharedPreferences.getInstance();
+      debugPrint('userId: ${prefs.getString('userId')}');
+      debugPrint(
+          'token: ${prefs.getString('token')?.substring(0, 10)}...'); // Exibe só parte do token
+
       _atividades = await _service.fetchAtividades();
-      debugPrint('$_atividades');
+      debugPrint('Atividades carregadas: ${_atividades.length}');
     } catch (e) {
-      debugPrint('Erro ao carregar atividades: $e');
+      debugPrint('Erro detalhado: $e');
+      debugPrint('StackTrace: ${StackTrace.current}');
       _atividades = [];
     }
-
     _carregando = false;
     notifyListeners();
   }
 
-  Future<void> selecionarArquivo({String arquivoPath = ''}) async {
+  String? _arquivoPath;
+  String? get arquivoPath => _arquivoPath;
+
+  Future<String?> selecionarArquivo() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
 
     if (result != null && result.files.single.path != null) {
-      arquivoPath = result.files.single.path!;
+      _arquivoPath = result.files.single.path!;
+      notifyListeners();
+      return _arquivoPath;
     }
+    return null;
   }
 
   String _statusSelecionado = 'Aprovada';

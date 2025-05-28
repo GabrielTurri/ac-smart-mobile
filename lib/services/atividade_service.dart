@@ -75,6 +75,7 @@ class AtividadeService {
       body: body,
     );
     if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
       debugPrint(data['mensagem']);
     } else {
       throw Exception(

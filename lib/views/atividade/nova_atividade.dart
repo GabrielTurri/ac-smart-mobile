@@ -4,18 +4,26 @@ import 'package:provider/provider.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:flutter/material.dart';
 
-class InserirAtividade extends StatelessWidget {
-  InserirAtividade({super.key});
+class InserirAtividade extends StatefulWidget {
+  const InserirAtividade({super.key});
 
+  @override
+  State<InserirAtividade> createState() => _InserirAtividadeState();
+}
+
+class _InserirAtividadeState extends State<InserirAtividade> {
   final _descricaoController = TextEditingController();
   final _tituloController = TextEditingController();
   final _horasSolicitadasController = TextEditingController();
-  // String? _anexo;
-  // DateTime? _data;
+  DateTime? _dataSelecionada;
 
   @override
   Widget build(BuildContext context) {
     final atividadeProvider = context.read<AtividadeProvider>();
+
+    // Para acessar o caminho do arquivo selecionado
+    String? caminhoAtual = context.watch<AtividadeProvider>().arquivoPath;
+
     return Scaffold(
       appBar: const ACSmartAppBar(title: 'Inserir Nova Atividade'),
       body: Container(
@@ -52,20 +60,39 @@ class InserirAtividade extends StatelessWidget {
                         labelText: 'Horas Totais',
                         border: OutlineInputBorder()),
                   ),
-                  CalendarioInput(DateTime.now()),
-                  // Row(
-                  //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  //   children: [
-                  //     Text(_data != null
-                  //         ? 'Data: ${_data!.toLocal()}'.split(' ')[0]
-                  //         : 'Nenhuma data selecionada'),
-                  //     ElevatedButton(
-                  //       onPressed: () =>
-                  //           atividadeProvider.selecionarData(context),
-                  //       child: const Text('Selecionar Data'),
-                  //     ),
-                  //   ],
-                  // ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          caminhoAtual != null
+                              ? 'Arquivo selecionado: ${caminhoAtual.split('/').last}'
+                              : 'Nenhum arquivo selecionado',
+                          style: const TextStyle(fontSize: 14),
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => atividadeProvider.selecionarArquivo(),
+                        child: const Text('Selecionar Anexo'),
+                      ),
+                    ],
+                  ),
+                  CalendarioInput(initialDate: DateTime.now()),
+                  // Use the CalendarioInput widget for date selection
+                  CalendarioInput(
+                    initialDate: DateTime.now(),
+                    onChanged: (selectedDate) {
+                      setState(() {
+                        _dataSelecionada = selectedDate;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _dataSelecionada != null
+                        ? 'Data selecionada: ${_dataSelecionada!.toLocal()}'.split(' ')[0]
+                        : 'Nenhuma data selecionada',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                 ],
               ),
             ),
@@ -113,33 +140,37 @@ class InserirAtividade extends StatelessWidget {
 }
 
 class CalendarioInput extends StatelessWidget {
-  CalendarioInput(this.dataAtividade, {super.key});
-  DateTime dataAtividade;
+  const CalendarioInput({
+    super.key,
+    required this.initialDate,
+    this.onChanged,
+  });
+
+  final DateTime initialDate;
+  final ValueChanged<DateTime>? onChanged;
 
   @override
   Widget build(BuildContext context) {
-    TextEditingController dataAtividadeController = TextEditingController(
-        text:
-            '${dataAtividade.day.toString().padLeft(2, '0')}/${dataAtividade.month.toString().padLeft(2, '0')}/${dataAtividade.year.toString()}');
-
     return TextField(
-      controller: dataAtividadeController,
       readOnly: true,
-      onTap: () => showDatePicker(
-        context: context,
-        helpText: 'Selecione a data da atividade',
-        initialDate: dataAtividade,
-        firstDate: dataAtividade.subtract(const Duration(days: 365)),
-        lastDate: DateTime.now(),
-        onDatePickerModeChange: (value) {
-          debugPrint(value.toString());
-        },
-      ),
+      onTap: () async {
+        final selectedDate = await showDatePicker(
+          context: context,
+          helpText: 'Selecione a data da atividade',
+          initialDate: initialDate,
+          firstDate: initialDate.subtract(const Duration(days: 365)),
+          lastDate: DateTime.now(),
+        );
+        if (selectedDate != null && onChanged != null) {
+          onChanged!(selectedDate);
+        }
+      },
       decoration: const InputDecoration(
-          prefixIcon: Icon(Icons.calendar_month_outlined),
-          suffixIcon: Icon(Icons.arrow_drop_down_outlined),
-          labelText: 'Data da atividade',
-          border: OutlineInputBorder()),
+        prefixIcon: Icon(Icons.calendar_month_outlined),
+        suffixIcon: Icon(Icons.arrow_drop_down_outlined),
+        labelText: 'Data da atividade',
+        border: OutlineInputBorder(),
+      ),
     );
   }
 }
