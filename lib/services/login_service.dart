@@ -7,18 +7,19 @@ import 'package:http/http.dart' as http;
 class LoginService {
   String baseUrl = Service().url;
 
-  Future<void> fetchLogin(BuildContext context) async {
+  Future<void> fetchLogin(
+      BuildContext context, String? tipo, String? email, String? senha) async {
     final Uri url = Uri.parse('$baseUrl/api/auth/login');
-
-    var response = await http.post(
+    final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
-        'email': 'bruno.costa@humanitae.br',
-        'senha': 'abcd=1234',
-        'tipo': 'aluno'
+        'email': email,
+        'senha': senha,
+        'tipo': tipo,
       }),
     );
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
