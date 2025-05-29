@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: ac-smart-mobile-backend:latest
+    container_name: ac-smart-backend
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB=${MONGO_DB}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - FLASK_APP=${FLASK_APP:-app.py}
+      - FLASK_ENV=${FLASK_ENV:-production}
+      - FLASK_DEBUG=${FLASK_DEBUG:-0}
+      - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-16777216}
+    networks:
+      - ac-smart-network
+
+networks:
+  ac-smart-network:
+    driver: bridge
