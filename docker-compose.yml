@@ -18,9 +18,15 @@ services:
       - FLASK_ENV=${FLASK_ENV:-production}
       - FLASK_DEBUG=${FLASK_DEBUG:-0}
       - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-16777216}
+    volumes:
+      - ./logs:/app/logs
+      - ./logs:/var/log/gunicorn
     networks:
       - ac-smart-network
 
 networks:
   ac-smart-network:
     driver: bridge
+
+volumes:
+  logs:

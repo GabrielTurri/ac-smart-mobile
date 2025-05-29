@@ -1,10 +1,13 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 from flask_jwt_extended import JWTManager
 import os
+import logging
 from api.routes import register_routes
 from utils.mongo_encoder import MongoJSONEncoder
+from utils.logging_config import configure_logging
+from utils.request_logger import init_request_logger
 
 # Carregar variáveis de ambiente
 load_dotenv()
@@ -12,6 +15,10 @@ load_dotenv()
 # Inicializar aplicação Flask
 app = Flask(__name__)
 CORS(app)
+
+# Configurar logging
+request_logger = configure_logging(app)
+init_request_logger(app, request_logger)
 
 # Configurar o encoder JSON personalizado para lidar com ObjectId do MongoDB
 app.json_encoder = MongoJSONEncoder
