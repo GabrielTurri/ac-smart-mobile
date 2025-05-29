@@ -5,7 +5,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: ac-smart-mobile-backend:latest
     container_name: ac-smart-backend
     restart: unless-stopped
     ports:
