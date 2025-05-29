@@ -15,7 +15,6 @@ class _InserirAtividadeState extends State<InserirAtividade> {
   final _descricaoController = TextEditingController();
   final _tituloController = TextEditingController();
   final _horasSolicitadasController = TextEditingController();
-  DateTime? _dataSelecionada;
 
   @override
   Widget build(BuildContext context) {
@@ -76,23 +75,9 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       ),
                     ],
                   ),
-                  CalendarioInput(initialDate: DateTime.now()),
+                  CalendarioInput(),
+                  // CalendarioInput(initialDate: DateTime.now()),
                   // Use the CalendarioInput widget for date selection
-                  CalendarioInput(
-                    initialDate: DateTime.now(),
-                    onChanged: (selectedDate) {
-                      setState(() {
-                        _dataSelecionada = selectedDate;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    _dataSelecionada != null
-                        ? 'Data selecionada: ${_dataSelecionada!.toLocal()}'.split(' ')[0]
-                        : 'Nenhuma data selecionada',
-                    style: const TextStyle(fontSize: 14),
-                  ),
                 ],
               ),
             ),
@@ -112,7 +97,7 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       titulo: _tituloController.text,
                       descricao: _descricaoController.text,
                       horasSolicitadas: horasSolicitadas,
-                      dataAtividade: DateTime(2025, 01, 01),
+                      dataAtividade: atividadeProvider.dataSelecionada!,
                     );
                     context.pop();
                     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
@@ -139,37 +124,30 @@ class _InserirAtividadeState extends State<InserirAtividade> {
   }
 }
 
-class CalendarioInput extends StatelessWidget {
-  const CalendarioInput({
-    super.key,
-    required this.initialDate,
-    this.onChanged,
-  });
-
-  final DateTime initialDate;
-  final ValueChanged<DateTime>? onChanged;
+class CalendarioInput extends StatefulWidget {
+  const CalendarioInput({super.key});
 
   @override
+  State<CalendarioInput> createState() => _CalendarioInputState();
+}
+
+class _CalendarioInputState extends State<CalendarioInput> {
+  @override
   Widget build(BuildContext context) {
-    return TextField(
+    final atividadeProvider = context.watch<AtividadeProvider>();
+    return TextFormField(
       readOnly: true,
       onTap: () async {
-        final selectedDate = await showDatePicker(
-          context: context,
-          helpText: 'Selecione a data da atividade',
-          initialDate: initialDate,
-          firstDate: initialDate.subtract(const Duration(days: 365)),
-          lastDate: DateTime.now(),
-        );
-        if (selectedDate != null && onChanged != null) {
-          onChanged!(selectedDate);
-        }
+        await atividadeProvider.selecionarData(context);
       },
-      decoration: const InputDecoration(
-        prefixIcon: Icon(Icons.calendar_month_outlined),
-        suffixIcon: Icon(Icons.arrow_drop_down_outlined),
-        labelText: 'Data da atividade',
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.calendar_month_outlined),
+        suffixIcon: const Icon(Icons.arrow_drop_down_outlined),
+        // labelText: 'Data da atividade',
+        border: const OutlineInputBorder(),
+        hintText: atividadeProvider.dataSelecionada != null 
+          ? '${atividadeProvider.dataSelecionada!.day.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.month.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.year}'
+          : 'Selecione uma data',
       ),
     );
   }

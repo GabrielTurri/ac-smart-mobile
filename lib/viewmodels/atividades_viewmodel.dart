@@ -41,7 +41,10 @@ class AtividadeProvider with ChangeNotifier {
   }
 
   String? _arquivoPath;
+  DateTime? _dataSelecionada;
+
   String? get arquivoPath => _arquivoPath;
+  DateTime? get dataSelecionada => _dataSelecionada;
 
   Future<String?> selecionarArquivo() async {
     final result = await FilePicker.platform.pickFiles(
@@ -65,48 +68,19 @@ class AtividadeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> selecionarData(context) async {
-    DateTime dataSelecionada = DateTime.now();
+  Future<void> selecionarData(BuildContext context) async {
     final DateTime? dataEscolhida = await showDatePicker(
       context: context,
-      initialDate: dataSelecionada,
+      initialDate: _dataSelecionada ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
     if (dataEscolhida != null) {
-      dataSelecionada = dataEscolhida;
+      _dataSelecionada = dataEscolhida;
+      notifyListeners();
     }
   }
-// Future<void> _selecionarData(BuildContext context) async {
-//     final DateTime? picked = await showDatePicker(
-//       context: context,
-//       initialDate: _data ?? DateTime.now(),
-//       firstDate: DateTime(2000),
-//       lastDate: DateTime(2101),
-//     );
-//     if (picked != null && picked != _data) {
-//       setState(() {
-//         _data = picked;
-//       });
-//     }
-//   }
 
-  // void salvar({
-  //   descricao,
-  //   statusSelecionado,
-  //   dataSelecionada,
-  //   arquivoPath,
-  //   horasSolicitadas,
-  // }) {
-  //   Activity novaAtividade = Activity(
-  //     titulo: descricao,
-  //     dataAtividade: dataSelecionada,
-  //     horasSolicitadas: horasSolicitadas,
-  //     alunoId: '',
-  //     descricao: '',
-  //   );
-  //   adicionarAtividade(novaAtividade);
-  // }
   Future<void> incluirAtividade({
     required String titulo,
     required String descricao,
@@ -116,7 +90,7 @@ class AtividadeProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     Activity novaAtividade = Activity(
       titulo: titulo,
-      dataAtividade: '2025-05-18',
+      dataAtividade: formatDateToHttp(dataAtividade),
       alunoId: prefs.getString('userId')!,
       descricao: descricao,
       horasSolicitadas: horasSolicitadas,
