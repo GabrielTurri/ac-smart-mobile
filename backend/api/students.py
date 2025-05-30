@@ -161,17 +161,19 @@ def create_student():
     if existing_user:
         return jsonify({'error': 'Já existe um usuário com este email'}), 400
     
+    # Hash da senha usando SHA-256
+    hashed_password = hashlib.sha256(data['password'].encode('utf-8')).hexdigest()
+    
     # Criar novo estudante
     new_student = {
         'name': data['name'],
         'surname': data['surname'],
         'email': data['email'],
-        'password': data['password'],  # Em produção, deve-se fazer hash da senha
+        'password': hashed_password,
         'role': 'student',
         'RA': data.get('RA', ''),
         'course': {
             'course_id': ObjectId(data['course_id'])
-            # Outros dados do curso serão preenchidos pelo backend
         },
         'activities': [],
         'total_approved_hours': 0,
