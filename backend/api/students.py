@@ -4,6 +4,21 @@ from models.user import User
 from bson import ObjectId
 import hashlib
 
+# Função para converter todos os ObjectId para string recursivamente
+def convert_objectid_to_str(obj):
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(value, ObjectId):
+                obj[key] = str(value)
+            elif isinstance(value, (dict, list)):
+                convert_objectid_to_str(value)
+    elif isinstance(obj, list):
+        for i, item in enumerate(obj):
+            if isinstance(item, ObjectId):
+                obj[i] = str(item)
+            elif isinstance(item, (dict, list)):
+                convert_objectid_to_str(item)
+
 students_blueprint = Blueprint('students', __name__)
 
 @students_blueprint.route('/', methods=['GET'])
@@ -75,18 +90,20 @@ def list_students():
         if 'password' in student:
             del student['password']
     
-    # ObjectId conversion is now handled in the User model
-    
     # Contar total de estudantes para paginação
     total = len(students)  # Simplificado, em produção deve usar count_documents
     total_pages = (total + limit - 1) // limit
     
-    return jsonify({
+    # Aplicar conversão recursiva para garantir que todos os ObjectId sejam convertidos para string
+    result = {
         'students': students,
         'total': total,
         'page': page,
         'total_pages': total_pages
-    }), 200
+    }
+    convert_objectid_to_str(result)
+    
+    return jsonify(result), 200
 
 @students_blueprint.route('/<student_id>', methods=['GET'])
 @jwt_required()
@@ -121,21 +138,6 @@ def get_student(student_id):
     # Remover senha
     if 'password' in student:
         del student['password']
-    
-    # Função para converter todos os ObjectId para string recursivamente
-    def convert_objectid_to_str(obj):
-        if isinstance(obj, dict):
-            for key, value in obj.items():
-                if isinstance(value, ObjectId):
-                    obj[key] = str(value)
-                elif isinstance(value, (dict, list)):
-                    convert_objectid_to_str(value)
-        elif isinstance(obj, list):
-            for i, item in enumerate(obj):
-                if isinstance(item, ObjectId):
-                    obj[i] = str(item)
-                elif isinstance(item, (dict, list)):
-                    convert_objectid_to_str(item)
     
     # Aplicar conversão recursiva
     convert_objectid_to_str(student)
@@ -207,10 +209,12 @@ def create_student():
     if not student_id:
         return jsonify({'error': 'Erro ao criar estudante'}), 500
     
-    return jsonify({
+    result = {
         'id': student_id,
         'message': 'Estudante criado com sucesso'
-    }), 201
+    }
+    convert_objectid_to_str(result)
+    return jsonify(result), 201
 
 @students_blueprint.route('/<student_id>', methods=['PUT'])
 @jwt_required()
@@ -275,7 +279,7 @@ def update_student(student_id):
     if 'RA' in data:
         update_data['RA'] = data['RA']
     
-    if 'course_id' in data and identity.get('role') == 'coordinator':
+    if 'course_id' in data and claims.get('role') == 'coordinator':
         # Apenas coordenadores podem alterar o curso
         update_data['course.course_id'] = ObjectId(data['course_id'])
     
@@ -285,9 +289,11 @@ def update_student(student_id):
     if not success:
         return jsonify({'error': 'Erro ao atualizar estudante'}), 500
     
-    return jsonify({
+    result = {
         'message': 'Estudante atualizado com sucesso'
-    }), 200
+    }
+    convert_objectid_to_str(result)
+    return jsonify(result), 200
 
 @students_blueprint.route('/<student_id>', methods=['DELETE'])
 @jwt_required()
@@ -325,6 +331,8 @@ def delete_student(student_id):
     if not success:
         return jsonify({'error': 'Erro ao remover estudante'}), 500
     
-    return jsonify({
+    result = {
         'message': 'Estudante removido com sucesso'
-    }), 200
+    }
+    convert_objectid_to_str(result)
+    return jsonify(result), 200
