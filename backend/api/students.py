@@ -49,7 +49,26 @@ def list_students():
     
     # Buscar estudantes
     user_model = User()
-    students = user_model.buscar_todos(role='student', filtros=filters, limite=limit, pagina=page)
+    
+    # Convert any ObjectId in filters to string to avoid serialization issues
+    for key, value in filters.items():
+        if isinstance(value, ObjectId):
+            filters[key] = str(value)
+        elif isinstance(value, dict):
+            for inner_key, inner_value in value.items():
+                if isinstance(inner_value, ObjectId):
+                    filters[key][inner_key] = str(inner_value)
+    
+    # Get a clean copy of filters to use for database query with proper ObjectIds
+    clean_filters = {'role': 'student'}
+    if 'name' in request.args:
+        name = request.args.get('name')
+        clean_filters['name'] = {'$regex': name, '$options': 'i'}
+    if 'course_id' in request.args:
+        course_id = request.args.get('course_id')
+        clean_filters['course.course_id'] = ObjectId(course_id)
+        
+    students = user_model.buscar_todos(role='student', filtros=clean_filters, limite=limit, pagina=page)
     
     # Remover senhas dos resultados
     for student in students:
