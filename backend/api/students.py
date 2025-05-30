@@ -56,15 +56,7 @@ def list_students():
         if 'password' in student:
             del student['password']
     
-    # Converter ObjectId para string para serialização JSON
-    for student in students:
-        student['_id'] = str(student['_id'])
-        if 'course' in student and 'course_id' in student['course']:
-            student['course']['course_id'] = str(student['course']['course_id'])
-        if 'activities' in student:
-            for activity in student['activities']:
-                if 'activity_id' in activity:
-                    activity['activity_id'] = str(activity['activity_id'])
+    # ObjectId conversion is now handled in the User model
     
     # Contar total de estudantes para paginação
     total = len(students)  # Simplificado, em produção deve usar count_documents

@@ -14,6 +14,7 @@ load_dotenv()
 
 # Inicializar aplicação Flask
 app = Flask(__name__)
+app.url_map.strict_slashes = False  # Disable strict slash handling
 CORS(app)
 
 # Configurar logging
