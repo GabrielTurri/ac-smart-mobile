@@ -122,14 +122,23 @@ def get_student(student_id):
     if 'password' in student:
         del student['password']
     
-    # Converter ObjectId para string
-    student['_id'] = str(student['_id'])
-    if 'course' in student and 'course_id' in student['course']:
-        student['course']['course_id'] = str(student['course']['course_id'])
-    if 'activities' in student:
-        for activity in student['activities']:
-            if 'activity_id' in activity:
-                activity['activity_id'] = str(activity['activity_id'])
+    # Função para converter todos os ObjectId para string recursivamente
+    def convert_objectid_to_str(obj):
+        if isinstance(obj, dict):
+            for key, value in obj.items():
+                if isinstance(value, ObjectId):
+                    obj[key] = str(value)
+                elif isinstance(value, (dict, list)):
+                    convert_objectid_to_str(value)
+        elif isinstance(obj, list):
+            for i, item in enumerate(obj):
+                if isinstance(item, ObjectId):
+                    obj[i] = str(item)
+                elif isinstance(item, (dict, list)):
+                    convert_objectid_to_str(item)
+    
+    # Aplicar conversão recursiva
+    convert_objectid_to_str(student)
     
     return jsonify(student), 200
 
