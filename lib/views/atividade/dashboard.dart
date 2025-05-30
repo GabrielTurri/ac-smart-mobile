@@ -5,11 +5,21 @@ import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Dashboard extends StatelessWidget {
   Dashboard({super.key});
   late String nomeUsuario;
   late HomepageProvider homepageProvider;
+
+  Future<void> _logout(BuildContext context) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    // Navegar para a tela de login e remover as rotas anteriores
+    // ignore: use_build_context_synchronously
+    context.go('/login');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,6 +99,17 @@ class Dashboard extends StatelessWidget {
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(8))),
                         child: const Text("Fazer Login"),
+                      ),
+                    ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: FilledButton(
+                        onPressed: () => _logout(context),
+                        style: FilledButton.styleFrom(
+                            backgroundColor: const Color(0xff476988),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8))),
+                        child: const Text("Fazer Logout"),
                       ),
                     ),
                     SizedBox(
