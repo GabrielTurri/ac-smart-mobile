@@ -48,8 +48,19 @@ class User:
             if role:
                 filtros['role'] = role
                 
-            usuarios = self.collection.find(filtros).skip(skip).limit(limite)
-            return list(usuarios)
+            usuarios = list(self.collection.find(filtros).skip(skip).limit(limite))
+            
+            # Convert ObjectIds to strings
+            for usuario in usuarios:
+                usuario['_id'] = str(usuario['_id'])
+                if 'course' in usuario and 'course_id' in usuario['course']:
+                    usuario['course']['course_id'] = str(usuario['course']['course_id'])
+                if 'activities' in usuario:
+                    for activity in usuario['activities']:
+                        if 'activity_id' in activity:
+                            activity['activity_id'] = str(activity['activity_id'])
+            
+            return usuarios
         except Exception as e:
             print(f"Erro ao buscar usuários: {e}")
             return []
@@ -65,7 +76,16 @@ class User:
             dict: Dados do usuário encontrado
         """
         try:
-            return self.collection.find_one({"_id": ObjectId(usuario_id)})
+            usuario = self.collection.find_one({"_id": ObjectId(usuario_id)})
+            if usuario:
+                usuario['_id'] = str(usuario['_id'])
+                if 'course' in usuario and 'course_id' in usuario['course']:
+                    usuario['course']['course_id'] = str(usuario['course']['course_id'])
+                if 'activities' in usuario:
+                    for activity in usuario['activities']:
+                        if 'activity_id' in activity:
+                            activity['activity_id'] = str(activity['activity_id'])
+            return usuario
         except Exception as e:
             print(f"Erro ao buscar usuário por ID: {e}")
             return None
@@ -85,7 +105,16 @@ class User:
             filtro = {"email": email}
             if role:
                 filtro["role"] = role
-            return self.collection.find_one(filtro)
+            usuario = self.collection.find_one(filtro)
+            if usuario:
+                usuario['_id'] = str(usuario['_id'])
+                if 'course' in usuario and 'course_id' in usuario['course']:
+                    usuario['course']['course_id'] = str(usuario['course']['course_id'])
+                if 'activities' in usuario:
+                    for activity in usuario['activities']:
+                        if 'activity_id' in activity:
+                            activity['activity_id'] = str(activity['activity_id'])
+            return usuario
         except Exception as e:
             print(f"Erro ao buscar usuário por email: {e}")
             return None
