@@ -227,7 +227,7 @@ def update_coordinator(coordinator_id):
         update_data['email'] = data['email']
     
     if 'password' in data and data['password']:
-        update_data['password'] = data['password']  # Em produção, deve-se fazer hash da senha
+        update_data['password'] = hashlib.sha256(data['password'].encode()).hexdigest()
     
     # Atualizar no banco de dados
     success = user_model.atualizar(coordinator_id, update_data)

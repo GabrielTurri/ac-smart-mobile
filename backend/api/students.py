@@ -250,7 +250,7 @@ def update_student(student_id):
         update_data['email'] = data['email']
     
     if 'password' in data and data['password']:
-        update_data['password'] = data['password']  # Em produção, deve-se fazer hash da senha
+        update_data['password'] = hashlib.sha256(data['password'].encode()).hexdigest()
     
     if 'RA' in data:
         update_data['RA'] = data['RA']
