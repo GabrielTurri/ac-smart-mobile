@@ -15,7 +15,7 @@ class LoginService {
       headers: {'Content-Type': 'application/json'},
       body: json.encode({
         'email': 'bruno.costa@humanitae.br',
-        'senha': 'abcd=1234',
+        'senha': 'teste',
         'tipo': 'aluno'
       }),
     );
