@@ -1,7 +1,4 @@
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
-import 'package:ac_smart/views/atividade/ui/app_bar.dart';
-import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
-import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -28,10 +25,22 @@ class Dashboard extends StatelessWidget {
     homepageProvider.lerNomeUsuario();
 
     return Scaffold(
-      appBar: const ACSmartAppBar(
-        title: 'Dashboard',
+      appBar: AppBar(
+        backgroundColor: const Color(0xff043565),
+        leading: IconButton(
+            onPressed: () => _logout(context),
+            icon: const Icon(
+              Icons.logout,
+              color: Colors.red,
+            )),
+        title: const Text(
+          'Dashboard',
+          style: TextStyle(color: Colors.white),
+          textAlign: TextAlign.center,
+        ),
+        centerTitle: true,
       ),
-      drawer: appDrawer(),
+      // drawer: appDrawer(),
       body: Center(
         child: Container(
           padding: const EdgeInsets.all(24),
@@ -43,14 +52,9 @@ class Dashboard extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Boas vindas, $nomeUsuario',
+                      'Boas vindas, $nomeUsuario!',
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    const Text(
-                      'Nome do curso',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -81,66 +85,6 @@ class Dashboard extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 26),
-              Container(
-                decoration: dashboardPanelDecoration(),
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          LoginProvider().fazerLogin(context);
-                        },
-                        style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xff476988),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8))),
-                        child: const Text("Fazer Login"),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () => _logout(context),
-                        style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xff476988),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8))),
-                        child: const Text("Fazer Logout"),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {},
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xff476988),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text("Entregar AC's"),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          context.push('/activities');
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xff476988),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Reprovadas'),
-                      ),
-                    )
-                  ],
-                ),
-              )
             ],
           ),
         ),

@@ -1,5 +1,6 @@
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
+import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/routes.dart';
 import 'package:provider/provider.dart';
@@ -10,6 +11,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (context) => AtividadeProvider()),
         ChangeNotifierProvider(create: (context) => HomepageProvider()),
+        ChangeNotifierProvider(create: (context) => LoginProvider()),
       ],
       child: const MyApp(),
     ),
