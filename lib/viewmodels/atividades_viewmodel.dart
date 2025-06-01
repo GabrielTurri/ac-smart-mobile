@@ -1,6 +1,5 @@
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/services/atividade_service.dart';
-import 'package:ac_smart/services/service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
   final AtividadeService _service = AtividadeService();
-  final String baseUrl = Service().url;
   List<Activity> _atividades = [];
   int _horasPedentes = 0;
   int _horasAprovadas = 0;

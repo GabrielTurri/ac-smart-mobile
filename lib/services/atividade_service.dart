@@ -7,8 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
 
 class AtividadeService {
-  String baseUrl = Service().url;
-  String backupUrl = Service().backupUrl;
+  final String baseUrl = Service.url;
+  final String backupUrl = Service.backupUrl;
 
   Future<List<Activity>> fetchAtividades() async {
     var prefs = await SharedPreferences.getInstance();
@@ -20,24 +20,25 @@ class AtividadeService {
       var response = await http.get(url, headers: {
         'Authorization': 'Bearer $token',
       }).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> jsonData = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> jsonData = jsonDecode(response.body);
 
-      final List<dynamic> atividadesJson = jsonData['atividades'];
-      return atividadesJson.map((json) => Activity.fromJson(json)).toList();
-    } else {
-      throw Exception(
-        'Erro ao consultar atividades: ${response.statusCode}\n ${response.body}.',
-      );
-    }
+        final List<dynamic> atividadesJson = jsonData['atividades'];
+        return atividadesJson.map((json) => Activity.fromJson(json)).toList();
+      } else {
+        throw Exception(
+          'Erro ao consultar atividades: ${response.statusCode}\n ${response.body}.',
+        );
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
-        var backupUrlPath = Uri.parse('$backupUrl/api/atividades/aluno/$studentId');
+        var backupUrlPath =
+            Uri.parse('$backupUrl/api/atividades/aluno/$studentId');
         var backupResponse = await http.get(backupUrlPath, headers: {
           'Authorization': 'Bearer $token',
         });
-        
+
         if (backupResponse.statusCode == 200) {
           final Map<String, dynamic> jsonData = jsonDecode(backupResponse.body);
           final List<dynamic> atividadesJson = jsonData['atividades'];
@@ -63,17 +64,17 @@ class AtividadeService {
       var response = await http.get(url, headers: {
         'Authorization': 'Bearer $token',
       }).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-      final Map<String, dynamic> atividadeJson = data['atividade'];
+        final Map<String, dynamic> atividadeJson = data['atividade'];
 
-      debugPrint('Atividade: $atividadeJson.');
-      return Activity.fromJson(atividadeJson);
-    } else {
-      throw Exception(
-          'Erro ao consultar atividade: ${response.statusCode}\n ${response.body}.');
-    }
+        debugPrint('Atividade: $atividadeJson.');
+        return Activity.fromJson(atividadeJson);
+      } else {
+        throw Exception(
+            'Erro ao consultar atividade: ${response.statusCode}\n ${response.body}.');
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
@@ -81,7 +82,7 @@ class AtividadeService {
         var backupResponse = await http.get(backupUrlPath, headers: {
           'Authorization': 'Bearer $token',
         });
-        
+
         if (backupResponse.statusCode == 200) {
           final data = jsonDecode(backupResponse.body);
           final Map<String, dynamic> atividadeJson = data['atividade'];
@@ -113,21 +114,23 @@ class AtividadeService {
     var body = json.encode(data);
 
     try {
-      var response = await http.post(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: body,
-      ).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
-      debugPrint(data['mensagem']);
-    } else {
-      throw Exception(
-          'Erro ao incluir atividade: ${response.statusCode}\n ${response.body}.');
-    }
+      var response = await http
+          .post(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 201) {
+        final data = jsonDecode(response.body);
+        debugPrint(data['mensagem']);
+      } else {
+        throw Exception(
+            'Erro ao incluir atividade: ${response.statusCode}\n ${response.body}.');
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
@@ -140,7 +143,7 @@ class AtividadeService {
           },
           body: body,
         );
-        
+
         if (backupResponse.statusCode == 201) {
           final data = jsonDecode(backupResponse.body);
           debugPrint(data['mensagem']);
@@ -170,26 +173,29 @@ class AtividadeService {
     var body = json.encode(data);
 
     try {
-      var response = await http.put(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: body,
-      ).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
+      var response = await http
+          .put(
+            url,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: body,
+          )
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-      debugPrint(data['mensagem']);
-    } else {
-      throw Exception(
-          'Erro ao alterar atividade: ${response.statusCode}\n ${response.body}.');
-    }
+        debugPrint(data['mensagem']);
+      } else {
+        throw Exception(
+            'Erro ao alterar atividade: ${response.statusCode}\n ${response.body}.');
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
-        var backupUrlPath = Uri.parse('$backupUrl/api/atividades/${atividade.id}');
+        var backupUrlPath =
+            Uri.parse('$backupUrl/api/atividades/${atividade.id}');
         var backupResponse = await http.put(
           backupUrlPath,
           headers: {
@@ -198,7 +204,7 @@ class AtividadeService {
           },
           body: body,
         );
-        
+
         if (backupResponse.statusCode == 200) {
           final data = jsonDecode(backupResponse.body);
           debugPrint(data['mensagem']);
@@ -222,12 +228,12 @@ class AtividadeService {
       var response = await http.delete(url, headers: {
         'Authorization': 'Bearer $token',
       }).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
-      debugPrint(response.body);
-    } else {
-      throw Exception(
-          'Erro ao excluir atividade: ${response.statusCode}\n ${response.body}.');
-    }
+      if (response.statusCode == 200) {
+        debugPrint(response.body);
+      } else {
+        throw Exception(
+            'Erro ao excluir atividade: ${response.statusCode}\n ${response.body}.');
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
@@ -235,7 +241,7 @@ class AtividadeService {
         var backupResponse = await http.delete(backupUrlPath, headers: {
           'Authorization': 'Bearer $token',
         });
-        
+
         if (backupResponse.statusCode == 200) {
           debugPrint(backupResponse.body);
         } else {
@@ -258,18 +264,20 @@ class AtividadeService {
     var url = Uri.parse('$baseUrl/api/atividades/$id/reject');
 
     try {
-      var response = await http.put(url,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $token',
-          },
-          body: json.encode({"observation": observation})).timeout(const Duration(seconds: 5));
-    if (response.statusCode == 200) {
-      debugPrint(response.body);
-    } else {
-      throw Exception(
-          'Erro ao rejeitar atividade: ${response.statusCode}\n ${response.body}.');
-    }
+      var response = await http
+          .put(url,
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer $token',
+              },
+              body: json.encode({"observation": observation}))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        debugPrint(response.body);
+      } else {
+        throw Exception(
+            'Erro ao rejeitar atividade: ${response.statusCode}\n ${response.body}.');
+      }
     } catch (e) {
       if (e is TimeoutException) {
         // Se ocorrer timeout, tenta com a URL de backup
@@ -280,7 +288,7 @@ class AtividadeService {
               'Authorization': 'Bearer $token',
             },
             body: json.encode({"observation": observation}));
-        
+
         if (backupResponse.statusCode == 200) {
           debugPrint(backupResponse.body);
         } else {
