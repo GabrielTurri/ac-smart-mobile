@@ -1,8 +1,5 @@
+import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
-import 'package:ac_smart/views/atividade/ui/app_bar.dart';
-import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
-import 'package:ac_smart/viewmodels/login_viewmodel.dart';
-import 'package:ac_smart/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -15,7 +12,6 @@ class Dashboard extends StatefulWidget {
 }
 
 class _DashboardState extends State<Dashboard> {
-  late HomepageProvider homepageProvider;
   bool isLoading = true;
 
   @override
@@ -27,18 +23,9 @@ class _DashboardState extends State<Dashboard> {
 
   Future<void> _loadUserData() async {
     try {
-      homepageProvider = Provider.of<HomepageProvider>(context, listen: false);
-      await homepageProvider.lerNomeUsuario();
-
-      // Load user data from API
-      final userData = await UserService().fetchUserData(context);
-
-      // If no user data was loaded, try to create a minimal user object from SharedPreferences
-      if (userData == null) {
-        await homepageProvider.loadUserFromPrefs();
-      }
+      context.read<HomepageProvider>().loadUserData(context);
     } catch (e) {
-      print('Error loading dashboard data: $e');
+      debugPrint('Error loading user data: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -50,9 +37,11 @@ class _DashboardState extends State<Dashboard> {
 
   @override
   Widget build(BuildContext context) {
+    final homepageProvider = context.watch<HomepageProvider>();
+    final atividadeProvider = context.watch<AtividadeProvider>();
     // Get the user object from the provider
-    final user = context.watch<HomepageProvider>().user;
-    final nomeUsuario = context.watch<HomepageProvider>().nomeUsuario;
+    final user = homepageProvider.user;
+    final nomeUsuario = homepageProvider.nomeUsuario;
 
     return Scaffold(
       appBar: AppBar(
@@ -83,11 +72,11 @@ class _DashboardState extends State<Dashboard> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          CircleAvatar(
+                          const CircleAvatar(
                             radius: 50,
-                            backgroundColor:
-                                const Color(0xff496F93).withOpacity(0.2),
-                            child: const Icon(
+                            backgroundColor: Color.fromARGB(
+                                51, 73, 111, 147), // 0.2 opacity = 51/255 alpha
+                            child: Icon(
                               Icons.person,
                               size: 60,
                               color: Color(0xff496F93),
@@ -129,37 +118,44 @@ class _DashboardState extends State<Dashboard> {
                       child: Padding(
                         padding: const EdgeInsets.all(16),
                         child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             const Text(
-                              'Horas complementares',
+                              'Suas horas complementares:',
+                              textAlign: TextAlign.center,
                               style: TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                             const SizedBox(height: 16),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
+                                _buildHoursCard(
+                                    'Horas Totais',
+                                    user != null
+                                        ? '${user.course.requiredHours}h'
+                                        : '0h',
+                                    Colors.black),
+                                const Divider(),
                                 _buildHoursCard(
                                     'Entregues',
                                     user != null
                                         ? '${user.totalApprovedHours}h'
                                         : '0h',
-                                    Colors.green.shade50,
                                     Colors.green),
+                                const Divider(),
                                 _buildHoursCard(
                                     'Pendentes',
                                     user != null
-                                        ? '${user.totalPendingHours}h'
+                                        ? '${atividadeProvider.horasPedentes}h'
                                         : '0h',
-                                    Colors.amber.shade50,
                                     Colors.amber),
+                                const Divider(),
                                 _buildHoursCard(
                                     'Rejeitadas',
                                     user != null
                                         ? '${user.totalRejectedHours}h'
                                         : '0h',
-                                    Colors.red.shade50,
                                     Colors.red),
                               ],
                             ),
@@ -185,22 +181,16 @@ class _DashboardState extends State<Dashboard> {
     );
   }
 
-  Widget _buildHoursCard(
-      String title, String hours, Color backgroundColor, Color textColor) {
+  Widget _buildHoursCard(String title, String hours, Color textColor) {
     return Container(
-      width: 90,
       padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(
             title,
             style: TextStyle(fontSize: 14, color: textColor),
           ),
-          const SizedBox(height: 8),
           Text(
             hours,
             style: TextStyle(

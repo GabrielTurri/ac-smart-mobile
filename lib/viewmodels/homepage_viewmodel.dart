@@ -9,12 +9,12 @@ class HomepageProvider with ChangeNotifier {
 
   String nomeUsuario = 'Login não efetuado';
   User? user;
-  
+
   HomepageProvider() {
     // Load user data when provider is created
     loadUserFromPrefs();
   }
-  
+
   // Method to set the user object
   void setUser(User newUser) {
     user = newUser;
@@ -32,30 +32,26 @@ class HomepageProvider with ChangeNotifier {
     notifyListeners();
     return nomeUsuario;
   }
-  
+
   // Load user data from SharedPreferences
   Future<void> loadUserFromPrefs() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final userId = prefs.getString('userId');
-      
-      if (userId != null) {
-        // If we have a userId, we can try to load user data from API
-        // For now, we'll create a basic user object with the stored data
-        final userName = prefs.getString('userName') ?? '';
-        final userSurname = prefs.getString('userSurname') ?? '';
-        
-        // Update the nomeUsuario
-        nomeUsuario = '$userName $userSurname';
-        
-        // Notify listeners that data has changed
-        notifyListeners();
-      }
-    } catch (e) {
-      print('Error loading user data: $e');
+    final prefs = await SharedPreferences.getInstance();
+    final userId = prefs.getString('userId');
+
+    if (userId != null) {
+      // If we have a userId, we can try to load user data from API
+      // For now, we'll create a basic user object with the stored data
+      final userName = prefs.getString('userName') ?? '';
+      final userSurname = prefs.getString('userSurname') ?? '';
+
+      // Update the nomeUsuario
+      nomeUsuario = '$userName $userSurname';
+
+      // Notify listeners that data has changed
+      notifyListeners();
     }
   }
-  
+
   // Get user information
   User? getUser() {
     return user;
@@ -63,6 +59,14 @@ class HomepageProvider with ChangeNotifier {
 
   setPaginaAtual(pagina) {
     currentPage = pagina;
+    notifyListeners();
+  }
+
+  loadUserData(BuildContext context) async {
+    lerNomeUsuario();
+
+    loadUserFromPrefs();
+
     notifyListeners();
   }
 }

@@ -7,6 +7,7 @@ import 'package:http/http.dart' as http;
 
 class AtividadeService {
   String baseUrl = Service().url;
+  String backupUrl = Service().backupUrl;
 
   Future<List<Activity>> fetchAtividades() async {
     var prefs = await SharedPreferences.getInstance();

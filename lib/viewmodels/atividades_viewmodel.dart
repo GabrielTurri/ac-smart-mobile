@@ -10,27 +10,52 @@ class AtividadeProvider with ChangeNotifier {
   final AtividadeService _service = AtividadeService();
   final String baseUrl = Service().url;
   List<Activity> _atividades = [];
+  int _horasPedentes = 0;
+  int _horasAprovadas = 0;
+  int _horasReprovadas = 0;
 
   List<Activity> get atividades => _atividades;
+  int get horasPedentes => _horasPedentes;
+  int get horasAprovadas => _horasAprovadas;
+  int get horasReprovadas => _horasReprovadas;
 
   bool _carregando = false;
   bool get carregando => _carregando;
 
   setAtividades(List<Activity> atividades) {
     _atividades = atividades;
+    // Calcular horas pendentes com tratamento para lista vazia
+    var atividadesPendentes = atividades
+        .where((atividade) => atividade.status == 'Pendente')
+        .map((atividade) => atividade.horasSolicitadas);
+    _horasPedentes = atividadesPendentes.isEmpty
+        ? 0
+        : atividadesPendentes.reduce((a, b) => a + b);
+
+    // Calcular horas aprovadas com tratamento para lista vazia
+    var atividadesAprovadas = atividades
+        .where((atividade) => atividade.status == 'Aprovado')
+        .map((atividade) => atividade.horasAprovadas);
+    _horasAprovadas = atividadesAprovadas.isEmpty
+        ? 0
+        : atividadesAprovadas.reduce((a, b) => a + b);
+
+    // Calcular horas reprovadas com tratamento para lista vazia
+    var atividadesReprovadas = atividades
+        .where((atividade) => atividade.status == 'Reprovado')
+        .map((atividade) => atividade.horasSolicitadas);
+    _horasReprovadas = atividadesReprovadas.isEmpty
+        ? 0
+        : atividadesReprovadas.reduce((a, b) => a + b);
+
+    notifyListeners();
   }
 
   Future<void> carregarAtividades() async {
     _carregando = true;
     try {
-      debugPrint('Iniciando carregamento de atividades...');
-      var prefs = await SharedPreferences.getInstance();
-      debugPrint('userId: ${prefs.getString('userId')}');
-      debugPrint(
-          'token: ${prefs.getString('token')?.substring(0, 10)}...'); // Exibe só parte do token
-
       _atividades = await _service.fetchAtividades();
-      debugPrint('Atividades carregadas: ${_atividades.length}');
+      setAtividades(_atividades);
     } catch (e) {
       debugPrint('Erro detalhado: $e');
       debugPrint('StackTrace: ${StackTrace.current}');
@@ -96,8 +121,13 @@ class AtividadeProvider with ChangeNotifier {
       horasSolicitadas: horasSolicitadas,
     );
     // dataAtividade: formatDateToHttp(dataAtividade),
-
-    _service.includeAtividade(novaAtividade);
+    try {
+      _service.includeAtividade(novaAtividade);
+      atividades.add(novaAtividade);
+      setAtividades(atividades);
+    } catch (e) {
+      debugPrint('Erro ao incluir atividade: $e');
+    }
     notifyListeners();
   }
 
@@ -114,7 +144,6 @@ class AtividadeProvider with ChangeNotifier {
     // arquivoPath,
     horasSolicitadas,
   }) async {
-    // Activity atividade = _atividades.firstWhere((a) => a.id == id);
     Activity atividade = await _service.fetchAtividade(id);
     if (titulo != null) {
       atividade.titulo = titulo;
