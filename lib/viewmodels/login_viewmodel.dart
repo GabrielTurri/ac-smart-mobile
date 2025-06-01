@@ -12,8 +12,11 @@ class LoginProvider extends ChangeNotifier {
       if (email.isEmpty || senha.isEmpty) {
         return false;
       }
-      
+
       final result = await LoginService().fetchLogin(tipo, email, senha);
+      if (result) {
+        notifyListeners(); // Notify when login is successful
+      }
       return result;
     } catch (e) {
       debugPrint('Login error: $e');
@@ -27,5 +30,6 @@ class LoginProvider extends ChangeNotifier {
     await prefs.setString('userId', '');
     await prefs.setString('userName', '');
     await prefs.setString('userSurname', '');
+    notifyListeners(); // Notify when logging out
   }
 }

@@ -4,6 +4,7 @@ import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/routes.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
@@ -13,15 +14,40 @@ void main() {
         ChangeNotifierProvider(create: (context) => HomepageProvider()),
         ChangeNotifierProvider(create: (context) => LoginProvider()),
       ],
-      child: const MyApp(),
+      child: const TokenWrapper(),
     ),
   );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class TokenWrapper extends StatelessWidget {
+  const TokenWrapper({super.key});
 
-  get _router => Routes().router;
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<LoginProvider>(
+      builder: (context, loginProvider, _) {
+        return FutureBuilder<SharedPreferences>(
+          future: SharedPreferences.getInstance(),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const MaterialApp(home: CircularProgressIndicator());
+            }
+
+            final token = snapshot.data!.getString('token') ?? '';
+            return MyApp(token: token);
+          },
+        );
+      },
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key, required this.token});
+
+  final String token;
+
+  get _router => Routes(token: token).router;
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
