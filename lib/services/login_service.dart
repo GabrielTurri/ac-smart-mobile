@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:ac_smart/models/user_model.dart';
 import 'package:ac_smart/services/service.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,7 +8,7 @@ import 'package:http/http.dart' as http;
 class LoginService {
   String baseUrl = Service().url;
 
-  Future<void> fetchLogin(BuildContext context) async {
+  Future<User?> fetchLogin(BuildContext context) async {
     final Uri url = Uri.parse('$baseUrl/api/auth/login');
 
     var response = await http.post(
@@ -23,16 +24,19 @@ class LoginService {
       final data = jsonDecode(response.body);
       final prefs = await SharedPreferences.getInstance();
 
-      String userId = data['usuario']['_id'];
-      String userName = data['usuario']['name'];
-      String userEmail = data['usuario']['email'];
-      int horas_aprovadas = data['usuario']['total_approved_hours'];
-      int horas_solicitadas = data['usuario']['total_pending_hours'];
-
+      // Salvar o token e outras informações básicas no SharedPreferences
       await prefs.setString('token', data['token']);
-      await prefs.setString('userId', userId);
-      await prefs.setString('userName', userName);
-      await prefs.setString('userSurname', data['usuario']['surname']);
+      
+      // Criar um objeto User a partir dos dados da resposta
+      User user = User.fromJson(data['usuario']);
+      
+      // Salvar informações do usuário no SharedPreferences para acesso rápido
+      await prefs.setString('userId', user.id);
+      await prefs.setString('userName', user.name);
+      await prefs.setString('userSurname', user.surname);
+      
+      // Retornar o objeto User completo
+      return user;
     } else {
       throw Exception(
         'Falha ao realizar login. Status: ${response.statusCode}. Response body: ${response.body}',

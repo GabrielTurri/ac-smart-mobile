@@ -15,7 +15,9 @@ class Dashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     homepageProvider = context.read<HomepageProvider>();
     nomeUsuario = context.watch<HomepageProvider>().nomeUsuario;
-    homepageProvider.lerNomeUsuario();
+    
+    // Carregar informações do usuário se ainda não estiverem carregadas
+    homepageProvider.carregarUsuario();
 
     return Scaffold(
       appBar: const ACSmartAppBar(
@@ -37,10 +39,12 @@ class Dashboard extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
-                    const Text(
-                      'Nome do curso',
+                    Text(
+                      homepageProvider.currentUser != null 
+                          ? homepageProvider.currentUser!.course.courseName
+                          : 'Nome do curso',
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ],
                 ),
@@ -61,11 +65,29 @@ class Dashboard extends StatelessWidget {
                           borderRadius:
                               const BorderRadius.all(Radius.circular(100))),
                     ),
-                    const Row(
+                    Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Text('Entregues'),
-                        Text('Restantes'),
+                        Column(
+                          children: [
+                            const Text('Entregues', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              homepageProvider.currentUser != null 
+                                  ? '${homepageProvider.currentUser!.totalApprovedHours} horas'
+                                  : '0 horas',
+                            ),
+                          ],
+                        ),
+                        Column(
+                          children: [
+                            const Text('Restantes', style: TextStyle(fontWeight: FontWeight.bold)),
+                            Text(
+                              homepageProvider.currentUser != null 
+                                  ? '${homepageProvider.currentUser!.course.requiredHours - homepageProvider.currentUser!.totalApprovedHours} horas'
+                                  : '0 horas',
+                            ),
+                          ],
+                        ),
                       ],
                     )
                   ],
@@ -81,8 +103,9 @@ class Dashboard extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: FilledButton(
-                        onPressed: () {
-                          LoginProvider().fazerLogin(context);
+                        onPressed: () async {
+                          final loginProvider = Provider.of<LoginProvider>(context, listen: false);
+                          await loginProvider.fazerLogin(context);
                         },
                         style: FilledButton.styleFrom(
                             backgroundColor: const Color(0xff476988),
