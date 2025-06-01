@@ -33,11 +33,11 @@ class Routes {
             ]),
         GoRoute(
           path: '/new_activity',
-          builder: (context, state) => InserirAtividade(),
+          builder: (context, state) => const InserirAtividade(),
         ),
         GoRoute(
           path: '/login',
-          builder: (context, state) => ACSMartLogin(),
+          builder: (context, state) => const ACSMartLogin(),
         ),
       ],
     );

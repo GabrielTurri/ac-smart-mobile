@@ -8,9 +8,19 @@ class HomepageProvider with ChangeNotifier {
   int currentSelectedNavigation = 0;
 
   String nomeUsuario = 'Login não efetuado';
-  User? currentUser;
+  User? user;
   
-  bool get isLoggedIn => currentUser != null;
+  HomepageProvider() {
+    // Load user data when provider is created
+    loadUserFromPrefs();
+  }
+  
+  // Method to set the user object
+  void setUser(User newUser) {
+    user = newUser;
+    nomeUsuario = '${user!.name} ${user!.surname}';
+    notifyListeners();
+  }
 
   Future<String> lerNomeUsuario() async {
     final prefs = await SharedPreferences.getInstance();
@@ -23,30 +33,32 @@ class HomepageProvider with ChangeNotifier {
     return nomeUsuario;
   }
   
-  void setCurrentUser(User user) {
-    currentUser = user;
-    nomeUsuario = '${user.name} ${user.surname}';
-    notifyListeners();
-  }
-  
-  Future<void> carregarUsuario() async {
-    final prefs = await SharedPreferences.getInstance();
-    final token = prefs.getString('token');
-    
-    if (token != null) {
-      // Tentar recuperar as informações do usuário do SharedPreferences
-      // Isso é apenas um fallback, o ideal é que o objeto User já tenha sido definido pelo login
-      if (currentUser == null) {
-        // Aqui poderíamos fazer uma chamada à API para obter os dados completos do usuário
-        // Por enquanto, apenas atualizamos o nome do usuário
-        nomeUsuario = '${prefs.getString("userName")} ${prefs.getString("userSurname")}';
+  // Load user data from SharedPreferences
+  Future<void> loadUserFromPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final userId = prefs.getString('userId');
+      
+      if (userId != null) {
+        // If we have a userId, we can try to load user data from API
+        // For now, we'll create a basic user object with the stored data
+        final userName = prefs.getString('userName') ?? '';
+        final userSurname = prefs.getString('userSurname') ?? '';
+        
+        // Update the nomeUsuario
+        nomeUsuario = '$userName $userSurname';
+        
+        // Notify listeners that data has changed
         notifyListeners();
       }
-    } else {
-      currentUser = null;
-      nomeUsuario = 'Login não efetuado';
-      notifyListeners();
+    } catch (e) {
+      print('Error loading user data: $e');
     }
+  }
+  
+  // Get user information
+  User? getUser() {
+    return user;
   }
 
   setPaginaAtual(pagina) {

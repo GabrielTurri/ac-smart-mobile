@@ -18,7 +18,7 @@ class ACSmartButton extends StatelessWidget {
       child: FilledButton(
         onPressed: () => onPressed,
         style: FilledButton.styleFrom(
-            backgroundColor: Color(0xff043565),
+            backgroundColor: const Color(0xff043565),
             padding: const EdgeInsets.symmetric(vertical: 16),
             shape:
                 RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),

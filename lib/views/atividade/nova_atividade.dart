@@ -75,7 +75,7 @@ class _InserirAtividadeState extends State<InserirAtividade> {
                       ),
                     ],
                   ),
-                  CalendarioInput(),
+                  const CalendarioInput(),
                   // CalendarioInput(initialDate: DateTime.now()),
                   // Use the CalendarioInput widget for date selection
                 ],
@@ -145,9 +145,9 @@ class _CalendarioInputState extends State<CalendarioInput> {
         suffixIcon: const Icon(Icons.arrow_drop_down_outlined),
         // labelText: 'Data da atividade',
         border: const OutlineInputBorder(),
-        hintText: atividadeProvider.dataSelecionada != null 
-          ? '${atividadeProvider.dataSelecionada!.day.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.month.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.year}'
-          : 'Selecione uma data',
+        hintText: atividadeProvider.dataSelecionada != null
+            ? '${atividadeProvider.dataSelecionada!.day.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.month.toString().padLeft(2, '0')}/${atividadeProvider.dataSelecionada!.year}'
+            : 'Selecione uma data',
       ),
     );
   }

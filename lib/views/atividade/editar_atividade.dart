@@ -19,7 +19,6 @@ class EditarAtividade extends StatelessWidget {
     // ActivityListItemProvider atividadeProvider =
     //     context.read<ActivityListItemProvider>();
 
-
     final bool isEditable = (atividade.status == 'Aprovada') ? false : true;
     return ChangeNotifierProvider(
       create: (context) => ActivityListItemProvider(),
@@ -197,7 +196,7 @@ class EditarAtividade extends StatelessWidget {
                   ),
                   ListTile(
                     title: const Text('Data da Atividade'),
-                    subtitle: Text(provider.dataSelecionada != null 
+                    subtitle: Text(provider.dataSelecionada != null
                         ? provider.formatarData(provider.dataSelecionada)
                         : atividade.dataAtividade),
                     onTap: () async {
@@ -212,14 +211,16 @@ class EditarAtividade extends StatelessWidget {
                                 int.parse(dateParts[2]),
                               )
                             : null;
-                            debugPrint('$initialDate');
+                        debugPrint('$initialDate');
                         await provider.selecionarData(
                           context,
                           initialDate: initialDate,
                         );
-                        
-                        provider.saveEditing(4, atividade.id!,
-                            provider.dataSelecionada != null 
+
+                        provider.saveEditing(
+                            4,
+                            atividade.id!,
+                            provider.dataSelecionada != null
                                 ? formatDateToHttp(provider.dataSelecionada!)
                                 : atividade.dataAtividade);
                       }
@@ -229,9 +230,12 @@ class EditarAtividade extends StatelessWidget {
                             icon: const Icon(Icons.check),
                             onPressed: () {
                               provider.items[4].isEditing = false;
-                              provider.saveEditing(4, atividade.id!,
-                                  provider.dataSelecionada != null 
-                                      ? provider.formatarData(provider.dataSelecionada)
+                              provider.saveEditing(
+                                  4,
+                                  atividade.id!,
+                                  provider.dataSelecionada != null
+                                      ? provider.formatarData(
+                                          provider.dataSelecionada)
                                       : atividade.dataAtividade);
                             },
                           )
@@ -327,11 +331,11 @@ class EditarAtividade extends StatelessWidget {
       },
       trailing: item.isEditing
           ? IconButton(
-              icon: Icon(Icons.check),
+              icon: const Icon(Icons.check),
               onPressed: () =>
                   provider.saveEditing(index, atividade.id!, controller.text),
             )
-          : Icon(Icons.edit),
+          : const Icon(Icons.edit),
     );
   }
 }

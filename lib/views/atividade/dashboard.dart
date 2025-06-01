@@ -1,157 +1,176 @@
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
+import 'package:ac_smart/views/atividade/ui/app_bar.dart';
+import 'package:ac_smart/views/atividade/ui/app_drawer.dart';
+import 'package:ac_smart/viewmodels/login_viewmodel.dart';
+import 'package:ac_smart/services/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-class Dashboard extends StatelessWidget {
-  Dashboard({super.key});
-  late String nomeUsuario;
+class Dashboard extends StatefulWidget {
+  const Dashboard({super.key});
+
+  @override
+  State<Dashboard> createState() => _DashboardState();
+}
+
+class _DashboardState extends State<Dashboard> {
   late HomepageProvider homepageProvider;
+  bool isLoading = true;
 
-  Future<void> _logout(BuildContext context) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+  @override
+  void initState() {
+    super.initState();
+    // Load user data when the dashboard is first displayed
+    _loadUserData();
+  }
 
-    // Navegar para a tela de login e remover as rotas anteriores
-    // ignore: use_build_context_synchronously
-    context.go('/login');
+  Future<void> _loadUserData() async {
+    try {
+      homepageProvider = Provider.of<HomepageProvider>(context, listen: false);
+      await homepageProvider.lerNomeUsuario();
+
+      // Load user data from API
+      final userData = await UserService().fetchUserData(context);
+
+      // If no user data was loaded, try to create a minimal user object from SharedPreferences
+      if (userData == null) {
+        await homepageProvider.loadUserFromPrefs();
+      }
+    } catch (e) {
+      print('Error loading dashboard data: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    homepageProvider = context.read<HomepageProvider>();
-    nomeUsuario = context.watch<HomepageProvider>().nomeUsuario;
-    
-    // Carregar informações do usuário se ainda não estiverem carregadas
-    homepageProvider.carregarUsuario();
+    // Get the user object from the provider
+    final user = context.watch<HomepageProvider>().user;
+    final nomeUsuario = context.watch<HomepageProvider>().nomeUsuario;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xff043565),
-        leading: IconButton(
-            onPressed: () => _logout(context),
-            icon: const Icon(
-              Icons.logout,
-              color: Colors.red,
-            )),
         title: const Text(
           'Dashboard',
           style: TextStyle(color: Colors.white),
-          textAlign: TextAlign.center,
         ),
         centerTitle: true,
-      ),
-      // drawer: appDrawer(),
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  children: [
-                    Text(
-                      'Boas vindas, $nomeUsuario!',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      homepageProvider.currentUser != null 
-                          ? homepageProvider.currentUser!.course.courseName
-                          : 'Nome do curso',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                decoration: dashboardPanelDecoration(),
-                padding: const EdgeInsets.all(16),
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Container(
-                      height: 150,
-                      width: 150,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          border: Border.all(
-                              width: 1, color: const Color(0xff496F93)),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(100))),
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Column(
-                          children: [
-                            const Text('Entregues', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text(
-                              homepageProvider.currentUser != null 
-                                  ? '${homepageProvider.currentUser!.totalApprovedHours} horas'
-                                  : '0 horas',
-                            ),
-                          ],
-                        ),
-                        Column(
-                          children: [
-                            const Text('Restantes', style: TextStyle(fontWeight: FontWeight.bold)),
-                            Text(
-                              homepageProvider.currentUser != null 
-                                  ? '${homepageProvider.currentUser!.course.requiredHours - homepageProvider.currentUser!.totalApprovedHours} horas'
-                                  : '0 horas',
-                            ),
-                          ],
-                        ),
-                      ],
-                    )
-                  ],
-                ),
-              ),
-              const SizedBox(height: 26),
-              Container(
-                decoration: dashboardPanelDecoration(),
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {},
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xff476988),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text("Entregar AC's"),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        onPressed: () {
-                          context.push('/activities');
-                        },
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xff476988),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8)),
-                        ),
-                        child: const Text('Reprovadas'),
-                      ),
-                    )
-                  ],
-                ),
-              )
-            ],
-          ),
+        leading: IconButton(
+          icon: const Icon(Icons.logout, color: Colors.red),
+          onPressed: () {
+            context.go('/login');
+          },
         ),
+        backgroundColor: const Color(0xff043565),
       ),
+      body: isLoading
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        children: [
+                          CircleAvatar(
+                            radius: 50,
+                            backgroundColor:
+                                const Color(0xff496F93).withOpacity(0.2),
+                            child: const Icon(
+                              Icons.person,
+                              size: 60,
+                              color: Color(0xff496F93),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            nomeUsuario,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            user != null
+                                ? user.course.courseName
+                                : 'Nome do curso',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                fontSize: 16, color: Colors.grey),
+                          ),
+                          if (user?.email != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              user!.email,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                  fontSize: 14, color: Colors.grey),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      elevation: 2,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Horas complementares',
+                              style: TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 16),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                _buildHoursCard(
+                                    'Entregues',
+                                    user != null
+                                        ? '${user.totalApprovedHours}h'
+                                        : '0h',
+                                    Colors.green.shade50,
+                                    Colors.green),
+                                _buildHoursCard(
+                                    'Pendentes',
+                                    user != null
+                                        ? '${user.totalPendingHours}h'
+                                        : '0h',
+                                    Colors.amber.shade50,
+                                    Colors.amber),
+                                _buildHoursCard(
+                                    'Rejeitadas',
+                                    user != null
+                                        ? '${user.totalRejectedHours}h'
+                                        : '0h',
+                                    Colors.red.shade50,
+                                    Colors.red),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
@@ -163,6 +182,32 @@ class Dashboard extends StatelessWidget {
       ),
       color: const Color(0xffF7FBFF),
       borderRadius: BorderRadius.circular(24),
+    );
+  }
+
+  Widget _buildHoursCard(
+      String title, String hours, Color backgroundColor, Color textColor) {
+    return Container(
+      width: 90,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: TextStyle(fontSize: 14, color: textColor),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            hours,
+            style: TextStyle(
+                fontSize: 18, fontWeight: FontWeight.bold, color: textColor),
+          ),
+        ],
+      ),
     );
   }
 }
