@@ -1,5 +1,6 @@
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
 import 'package:ac_smart/viewmodels/homepage_viewmodel.dart';
+import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -41,7 +42,7 @@ class _DashboardState extends State<Dashboard> {
     final atividadeProvider = context.watch<AtividadeProvider>();
     // Get the user object from the provider
     final user = homepageProvider.user;
-    final nomeUsuario = homepageProvider.nomeUsuario;
+    final nomeUsuario = "${user?.name ?? ''} ${user?.surname ?? ''}";
 
     return Scaffold(
       appBar: AppBar(
@@ -53,6 +54,7 @@ class _DashboardState extends State<Dashboard> {
         leading: IconButton(
           icon: const Icon(Icons.logout, color: Colors.red),
           onPressed: () {
+            context.read<LoginProvider>().logout();
             context.go('/login');
           },
         ),
@@ -139,23 +141,17 @@ class _DashboardState extends State<Dashboard> {
                                 const Divider(),
                                 _buildHoursCard(
                                     'Entregues',
-                                    user != null
-                                        ? '${user.totalApprovedHours}h'
-                                        : '0h',
+                                    '${atividadeProvider.horasAprovadas}h',
                                     Colors.green),
                                 const Divider(),
                                 _buildHoursCard(
                                     'Pendentes',
-                                    user != null
-                                        ? '${atividadeProvider.horasPedentes}h'
-                                        : '0h',
+                                    '${atividadeProvider.horasPedentes}h',
                                     Colors.amber),
                                 const Divider(),
                                 _buildHoursCard(
                                     'Rejeitadas',
-                                    user != null
-                                        ? '${user.totalRejectedHours}h'
-                                        : '0h',
+                                    '${atividadeProvider.horasReprovadas}h',
                                     Colors.red),
                               ],
                             ),

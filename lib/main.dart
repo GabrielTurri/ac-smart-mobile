@@ -4,7 +4,6 @@ import 'package:ac_smart/viewmodels/login_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:ac_smart/routes.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
@@ -26,28 +25,19 @@ class TokenWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<LoginProvider>(
       builder: (context, loginProvider, _) {
-        return FutureBuilder<SharedPreferences>(
-          future: SharedPreferences.getInstance(),
-          builder: (context, snapshot) {
-            if (!snapshot.hasData) {
-              return const MaterialApp(home: CircularProgressIndicator());
-            }
-
-            final token = snapshot.data!.getString('token') ?? '';
-            return MyApp(token: token);
-          },
-        );
+        final isLogged = context.watch<LoginProvider>().isLoggedIn;
+        return MyApp(isLoggedIn: isLogged);
       },
     );
   }
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.token});
+  const MyApp({super.key, required this.isLoggedIn});
 
-  final String token;
+  final bool isLoggedIn;
 
-  get _router => Routes(token: token).router;
+  get _router => Routes(isLoggedIn: isLoggedIn).router;
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(

@@ -45,8 +45,6 @@ class LoginService {
 
         await prefs.setString('token', data['token']);
         await prefs.setString('userId', user.id);
-        await prefs.setString('userName', user.name);
-        await prefs.setString('userSurname', user.surname);
       } else {
         throw Exception(
           'Falha ao realizar login. Status: ${response.statusCode}. Response body: ${response.body}',

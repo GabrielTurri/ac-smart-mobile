@@ -7,17 +7,17 @@ import 'package:ac_smart/views/atividade/nova_atividade.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {
-  final String token;
+  final bool isLoggedIn;
   late final GoRouter _router;
 
-  Routes({required this.token}) {
+  Routes({required this.isLoggedIn}) {
     _router = GoRouter(
       initialLocation: '/',
       routes: [
         GoRoute(
           path: '/',
           builder: (context, state) =>
-              token.isEmpty ? const ACSMartLogin() : const HomePage(),
+              isLoggedIn ? const HomePage() : const ACSMartLogin(),
         ),
         GoRoute(
             path: '/activities',
