@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 class User {
   int ra;
   String id;
@@ -7,11 +6,9 @@ class User {
   String name;
   String surname;
   int totalApprovedHours;
-  int totalPendingdHours;
+  int totalPendingHours;
   int totalRejectedHours;
-
-  Map<Coordinator, dynamic> coordinator;
-  Map<Course, dynamic> course;
+  Course course;
 
   User({
     required this.ra,
@@ -21,11 +18,25 @@ class User {
     required this.name,
     required this.surname,
     required this.totalApprovedHours,
-    required this.totalPendingdHours,
+    required this.totalPendingHours,
     required this.totalRejectedHours,
-    required this.coordinator,
     required this.course,
   });
+
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      ra: json['RA'],
+      id: json['_id'],
+      email: json['email'],
+      role: json['role'],
+      name: json['name'],
+      surname: json['surname'],
+      totalApprovedHours: json['total_approved_hours'],
+      totalPendingHours: json['total_pending_hours'],
+      totalRejectedHours: json['total_rejected_hours'],
+      course: Course.fromJson(json['course']),
+    );
+  }
 }
 
 class Coordinator {
@@ -33,24 +44,49 @@ class Coordinator {
   String coordEmail;
   String coordName;
   String coordSurname;
-  List<Course> courses;
+  List<Course>? courses;
 
   Coordinator({
     required this.coordId,
     required this.coordEmail,
     required this.coordName,
     required this.coordSurname,
-    required this.courses,
+    this.courses,
   });
+
+  factory Coordinator.fromJson(Map<String, dynamic> json) {
+    return Coordinator(
+      coordId: json['coordinator_id'],
+      coordEmail: json['email'],
+      coordName: json['name'],
+      coordSurname: json['surname'],
+      courses: json['courses'] != null
+          ? (json['courses'] as List)
+              .map((course) => Course.fromJson(course))
+              .toList()
+          : null,
+    );
+  }
 }
 
 class Course {
   String courseId;
   String courseName;
   int requiredHours;
+  Coordinator coordinator;
   Course({
     required this.courseId,
     required this.courseName,
     required this.requiredHours,
+    required this.coordinator,
   });
+
+  factory Course.fromJson(Map<String, dynamic> json) {
+    return Course(
+      courseId: json['course_id'],
+      courseName: json['name'],
+      requiredHours: json['required_hours'],
+      coordinator: Coordinator.fromJson(json['coordinator']),
+    );
+  }
 }

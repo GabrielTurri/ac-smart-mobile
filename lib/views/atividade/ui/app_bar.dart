@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ac_smart/models/colors.dart';
 
 class ACSmartAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ACSmartAppBar({

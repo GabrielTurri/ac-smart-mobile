@@ -1,6 +1,5 @@
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/services/atividade_service.dart';
-import 'package:ac_smart/services/service.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -8,42 +7,80 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AtividadeProvider with ChangeNotifier {
   // ignore: prefer_final_fields
   final AtividadeService _service = AtividadeService();
-  final String baseUrl = Service().url;
   List<Activity> _atividades = [];
+  int _horasPedentes = 0;
+  int _horasAprovadas = 0;
+  int _horasReprovadas = 0;
 
   List<Activity> get atividades => _atividades;
+  int get horasPedentes => _horasPedentes;
+  int get horasAprovadas => _horasAprovadas;
+  int get horasReprovadas => _horasReprovadas;
 
   bool _carregando = false;
   bool get carregando => _carregando;
 
   setAtividades(List<Activity> atividades) {
     _atividades = atividades;
+    // Calcular horas pendentes com tratamento para lista vazia
+    var atividadesPendentes = atividades
+        .where((atividade) => atividade.status == 'Pendente')
+        .map((atividade) => atividade.horasSolicitadas);
+    _horasPedentes = atividadesPendentes.isEmpty
+        ? 0
+        : atividadesPendentes.reduce((a, b) => a + b);
+
+    // Calcular horas aprovadas com tratamento para lista vazia
+    var atividadesAprovadas = atividades
+        .where((atividade) => atividade.status == 'Aprovado')
+        .map((atividade) => atividade.horasAprovadas);
+    _horasAprovadas = atividadesAprovadas.isEmpty
+        ? 0
+        : atividadesAprovadas.reduce((a, b) => a + b);
+
+    // Calcular horas reprovadas com tratamento para lista vazia
+    var atividadesReprovadas = atividades
+        .where((atividade) => atividade.status == 'Reprovado')
+        .map((atividade) => atividade.horasSolicitadas);
+    _horasReprovadas = atividadesReprovadas.isEmpty
+        ? 0
+        : atividadesReprovadas.reduce((a, b) => a + b);
+
+    notifyListeners();
   }
 
   Future<void> carregarAtividades() async {
     _carregando = true;
-
     try {
       _atividades = await _service.fetchAtividades();
-      debugPrint('$_atividades');
+      setAtividades(_atividades);
     } catch (e) {
-      debugPrint('Erro ao carregar atividades: $e');
+      debugPrint('Erro detalhado: $e');
+      debugPrint('StackTrace: ${StackTrace.current}');
       _atividades = [];
     }
-
     _carregando = false;
     notifyListeners();
   }
 
-  Future<void> selecionarArquivo({String arquivoPath = ''}) async {
+  String? _arquivoPath;
+  DateTime? _dataSelecionada;
+
+  String? get arquivoPath => _arquivoPath;
+  DateTime? get dataSelecionada => _dataSelecionada;
+
+  Future<String?> selecionarArquivo() async {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
     );
 
     if (result != null && result.files.single.path != null) {
-      arquivoPath = result.files.single.path!;
+      _arquivoPath = result.files.single.path!;
+      notifyListeners();
+      return _arquivoPath;
     }
+    return null;
   }
 
   String _statusSelecionado = 'Aprovada';
@@ -54,48 +91,19 @@ class AtividadeProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> selecionarData(context) async {
-    DateTime dataSelecionada = DateTime.now();
+  Future<void> selecionarData(BuildContext context) async {
     final DateTime? dataEscolhida = await showDatePicker(
       context: context,
-      initialDate: dataSelecionada,
+      initialDate: _dataSelecionada ?? DateTime.now(),
       firstDate: DateTime(2020),
       lastDate: DateTime.now(),
     );
     if (dataEscolhida != null) {
-      dataSelecionada = dataEscolhida;
+      _dataSelecionada = dataEscolhida;
+      notifyListeners();
     }
   }
-// Future<void> _selecionarData(BuildContext context) async {
-//     final DateTime? picked = await showDatePicker(
-//       context: context,
-//       initialDate: _data ?? DateTime.now(),
-//       firstDate: DateTime(2000),
-//       lastDate: DateTime(2101),
-//     );
-//     if (picked != null && picked != _data) {
-//       setState(() {
-//         _data = picked;
-//       });
-//     }
-//   }
 
-  // void salvar({
-  //   descricao,
-  //   statusSelecionado,
-  //   dataSelecionada,
-  //   arquivoPath,
-  //   horasSolicitadas,
-  // }) {
-  //   Activity novaAtividade = Activity(
-  //     titulo: descricao,
-  //     dataAtividade: dataSelecionada,
-  //     horasSolicitadas: horasSolicitadas,
-  //     alunoId: '',
-  //     descricao: '',
-  //   );
-  //   adicionarAtividade(novaAtividade);
-  // }
   Future<void> incluirAtividade({
     required String titulo,
     required String descricao,
@@ -105,14 +113,19 @@ class AtividadeProvider with ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     Activity novaAtividade = Activity(
       titulo: titulo,
-      dataAtividade: '2025-05-18',
+      dataAtividade: formatDateToHttp(dataAtividade),
       alunoId: prefs.getString('userId')!,
       descricao: descricao,
       horasSolicitadas: horasSolicitadas,
     );
     // dataAtividade: formatDateToHttp(dataAtividade),
-
-    _service.includeAtividade(novaAtividade);
+    try {
+      _service.includeAtividade(novaAtividade);
+      atividades.add(novaAtividade);
+      setAtividades(atividades);
+    } catch (e) {
+      debugPrint('Erro ao incluir atividade: $e');
+    }
     notifyListeners();
   }
 
@@ -129,7 +142,6 @@ class AtividadeProvider with ChangeNotifier {
     // arquivoPath,
     horasSolicitadas,
   }) async {
-    // Activity atividade = _atividades.firstWhere((a) => a.id == id);
     Activity atividade = await _service.fetchAtividade(id);
     if (titulo != null) {
       atividade.titulo = titulo;

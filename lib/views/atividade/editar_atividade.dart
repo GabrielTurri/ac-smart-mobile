@@ -1,6 +1,7 @@
 import 'package:ac_smart/models/activity_model.dart';
 import 'package:ac_smart/viewmodels/activity_details_viewmodel.dart';
 import 'package:ac_smart/viewmodels/atividades_viewmodel.dart';
+import 'package:ac_smart/views/atividade/nova_atividade.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -66,10 +67,7 @@ class EditarAtividade extends StatelessWidget {
                   TextEditingController(text: atividade.descricao);
               // final arquivoPathController =
               //     TextEditingController(text: atividade.arquivoPath);
-              final dataAtividadeController = TextEditingController(
-                  text: atividade.dataAtividade.toString());
-              final statusController =
-                  TextEditingController(text: atividade.status);
+
               final horasSolicitadasController = TextEditingController(
                   text: atividade.horasSolicitadas.toString());
               return ListView(
@@ -198,29 +196,47 @@ class EditarAtividade extends StatelessWidget {
                   ),
                   ListTile(
                     title: const Text('Data da Atividade'),
-                    subtitle: provider.items[4].isEditing
-                        ? TextField(
-                            controller: dataAtividadeController,
-                            autofocus: true,
-                            onSubmitted: (newValue) => provider.saveEditing(
-                                4, atividade.id!, newValue),
-                            onEditingComplete: () => provider.saveEditing(
-                                4, atividade.id!, dataAtividadeController.text),
-                          )
-                        : Text(atividade.dataAtividade),
-                    onTap: () {
+                    subtitle: Text(provider.dataSelecionada != null
+                        ? provider.formatarData(provider.dataSelecionada)
+                        : atividade.dataAtividade),
+                    onTap: () async {
                       if (!provider.items[4].isEditing) {
                         provider.startEditing(4);
+                        // Parse the existing date string to DateTime
+                        final dateParts = atividade.dataAtividade.split('-');
+                        final initialDate = dateParts.length == 3
+                            ? DateTime(
+                                int.parse(dateParts[0]),
+                                int.parse(dateParts[1]),
+                                int.parse(dateParts[2]),
+                              )
+                            : null;
+                        debugPrint('$initialDate');
+                        await provider.selecionarData(
+                          context,
+                          initialDate: initialDate,
+                        );
+
+                        provider.saveEditing(
+                            4,
+                            atividade.id!,
+                            provider.dataSelecionada != null
+                                ? formatDateToHttp(provider.dataSelecionada!)
+                                : atividade.dataAtividade);
                       }
                     },
                     trailing: provider.items[4].isEditing
                         ? IconButton(
                             icon: const Icon(Icons.check),
                             onPressed: () {
-                              atividade.status = dataAtividadeController.text;
                               provider.items[4].isEditing = false;
-                              provider.saveEditing(4, atividade.id!,
-                                  dataAtividadeController.text);
+                              provider.saveEditing(
+                                  4,
+                                  atividade.id!,
+                                  provider.dataSelecionada != null
+                                      ? provider.formatarData(
+                                          provider.dataSelecionada)
+                                      : atividade.dataAtividade);
                             },
                           )
                         : const Icon(Icons.edit),
@@ -315,11 +331,11 @@ class EditarAtividade extends StatelessWidget {
       },
       trailing: item.isEditing
           ? IconButton(
-              icon: Icon(Icons.check),
+              icon: const Icon(Icons.check),
               onPressed: () =>
                   provider.saveEditing(index, atividade.id!, controller.text),
             )
-          : Icon(Icons.edit),
+          : const Icon(Icons.edit),
     );
   }
 }

@@ -7,39 +7,41 @@ import 'package:ac_smart/views/atividade/nova_atividade.dart';
 import 'package:go_router/go_router.dart';
 
 class Routes {
-  final _router = GoRouter(
-    initialLocation: '/',
-    routes: [
-      GoRoute(
-        path: '/',
-        // path: '/profile/:userid?filter=xyz',
-        builder: (context, state) => const HomePage(),
-        // ProfileScreen(
-        //  userId: state.params['userId'],
-        //  userId: state.queryParams[filter]
-        // )
-      ),
-      GoRoute(
-          path: '/activities',
-          builder: (context, state) => const Activities(),
-          routes: [
-            GoRoute(
-              path: 'details',
-              builder: (context, state) {
-                final atividade = state.extra as Activity;
-                return EditarAtividade(atividade: atividade);
-              },
-            ),
-          ]),
-      GoRoute(
-        path: '/new_activity',
-        builder: (context, state) => InserirAtividade(),
-      ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const ACSMartLogin(),
-      ),
-    ],
-  );
+  final bool isLoggedIn;
+  late final GoRouter _router;
+
+  Routes({required this.isLoggedIn}) {
+    _router = GoRouter(
+      initialLocation: '/',
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) =>
+              isLoggedIn ? const HomePage() : const ACSMartLogin(),
+        ),
+        GoRoute(
+            path: '/activities',
+            builder: (context, state) => const Activities(),
+            routes: [
+              GoRoute(
+                path: 'details',
+                builder: (context, state) {
+                  final atividade = state.extra as Activity;
+                  return EditarAtividade(atividade: atividade);
+                },
+              ),
+            ]),
+        GoRoute(
+          path: '/new_activity',
+          builder: (context, state) => const InserirAtividade(),
+        ),
+        GoRoute(
+          path: '/login',
+          builder: (context, state) => const ACSMartLogin(),
+        ),
+      ],
+    );
+  }
+
   GoRouter get router => _router;
 }

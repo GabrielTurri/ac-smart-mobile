@@ -96,7 +96,7 @@ class ActivityTile extends StatelessWidget {
         }
         // context.push('/activities/${atividade.id}');
       },
-      onLongPress: () => HoldActivityMenu(),
+      onLongPress: () => const HoldActivityMenu(),
       title: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
